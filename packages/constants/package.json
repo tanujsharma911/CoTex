@@ -1,0 +1,13 @@
+{
+  "name": "@cotex/constants",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@cotex/eslint-config": "workspace:*",
+    "@cotex/typescript-config": "workspace:*"
+  }
+}

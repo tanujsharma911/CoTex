@@ -1,0 +1,68 @@
+name: "CoTex"
+
+services:
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: ${BACKEND_URL}
+    container_name: cotex-frontend
+    ports:
+      - "${FRONTEND_PORT}:80"
+
+  mongodb:
+    image: mongo:6.0
+    container_name: cotex-mongodb
+    ports:
+      - "${MONGODB_PORT}:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: cotex-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Load Balancer for API Service
+  cotex-lb:
+    build:
+      context: ./services/load-balancer
+      dockerfile: Dockerfile
+    container_name: cotex-lb
+    ports:
+      - "${LOAD_BALANCER_PORT}:80"
+    depends_on:
+      - api-service
+      - editor-service
+    restart: unless-stopped
+
+  api-service:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - mongodb
+    restart: unless-stopped
+    replicas: 2
+
+  editor-service:
+    build:
+      context: ./services/editor
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - mongodb
+    restart: unless-stopped
+    replicas: 2
+
+volumes:
+  redis_data:
+  mongodb_data:

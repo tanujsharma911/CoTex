@@ -1,0 +1,16 @@
+{
+  "name": "@cotex/redis",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "ioredis": "^5.11.1"
+  },
+  "devDependencies": {
+    "@cotex/eslint-config": "workspace:*",
+    "@cotex/typescript-config": "workspace:*"
+  }
+}

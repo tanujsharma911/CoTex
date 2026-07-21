@@ -1,5 +1,5 @@
 {
-  "name": "CoTex_pnpm",
+  "name": "cotex",
   "private": true,
   "scripts": {
     "build": "turbo run build",

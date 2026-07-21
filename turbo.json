@@ -1,6 +1,19 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "MONGODB_URL",
+    "CORS_ORIGINS",
+    "REDIS_URL",
+    "MINIO_ENDPOINT",
+    "MINIO_PORT",
+    "MINIO_ACCESS_KEY",
+    "MINIO_SECRET_KEY",
+    "VITE_EDITOR_URL",
+    "VITE_API_URL",
+    "EDITOR_PORT",
+    "API_PORT"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

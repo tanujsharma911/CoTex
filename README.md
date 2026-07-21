@@ -1,159 +1,182 @@
-# Turborepo starter
+# CoTex - Collaborative Latex code Editor
 
-This Turborepo starter is maintained by the Turborepo core team.
+<div>
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js" />
+  <img src="https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=socket.io&logoColor=white" alt="WebSocket" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+</div>
 
-## Using this example
+![preview](https://github.com/user-attachments/assets/119f6fc9-2b45-4fb6-aeac-7b9136e3aed7)
 
-Run the following command:
+<div align="center">
 
-```sh
-npx create-turbo@latest
-```
+[🌐 View Live](https://cotex.tanujsharma.me)
 
-## What's inside?
+</div>
 
-This Turborepo includes the following packages/apps:
+## Key Highlights
 
-### Apps and Packages
+1. **Conflict Resolution**: Document contains datatype(eg. text, array, map, etc). Document updates are **commutative, associative, and idempotent** means changes applied to doc in any order results same output.
+2. **Sync Protocol**: Client sends a State Vector. Server calculates the between server doc and client doc and sends back only the missing updates.
+3. **Awareness**: Multiple users can edit same doc. Awareness protocol shares metadata about users (eg. cursor position, name, color) to other users in real-time.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+> [!CAUTION]
+> Currently major code resturucturing is going on.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## Functional Requirements
 
-### Utilities
+- Users can do CRUD operations on doc.
+- Multiple users can connect to same doc.
+- Users can see real-time changes of other users on doc.
+- Users can see realtime cursor movement of others.
 
-This Turborepo has some additional tools already setup for you:
+## Non-Functional Requirements
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- Millions of users, Millions of documents.
+- Up to 100 concurrent users per document.
+- Latency max 200ms.
+- Documents to converge / consistency
 
-### Build
+## High Level Design
 
-To build all apps and packages, run the following command:
+![preview](https://github.com/user-attachments/assets/488836f9-33ab-448c-abd3-ac0c9e83da20)
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+#### Components:
 
-```sh
-cd my-turborepo
-turbo build
-```
+1. **Reverse Proxy**: Client requests first hit the Reverse Proxy, which routes them to the appropriate backend services.
 
-Without global `turbo`, use your package manager:
+2. **Load Balancer**: The Load Balancer distributes incoming connections across multiple Editor Service instances (Currently only 2), using nginx round-robin distribution.
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
-```
+3. **Server**: The Server handles WebSocket connections, REST APIs with the database and Redis for persistence and pub/sub functionality.
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+4. **MongoDB**: The MongoDB database stores the document data, including the Y.Doc state and user awareness information. Currently using MongoDB Atlas.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+5. **Pub/Sub**: The Pub/Sub system is implemented using Redis. It allows the websocket service instances to communicate with each other, Used to scale node.js servers horizontally.
 
-```sh
-turbo build --filter=docs
-```
+## Tools & Technologies used in demo
 
-Without global `turbo`:
+| Layer    | Choice                                              | Why                                                  |
+| -------- | --------------------------------------------------- | ---------------------------------------------------- |
+| Frontend | `React` + `yjs`(Data Structures)                    | yjs handles CRDTs and it is Local-first architecture |
+| Backend  | `Node.js` + `ws` + `Redis` + `yjs`(Data Structures) | pairs well with yjs                                  |
+| DB       | `MongoDB`                                           | simple, deployable                                   |
+| Deploy   | Hostinger VPS using Docker                          | Production environment                               |
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+## Local Setup Instructions
 
-### Develop
+1. Clone the repository
 
-To develop all apps and packages, run the following command:
+   ```
+   mkdir CoTex
+   cd CoTex
+   git clone https://github.com/tanujsharma911/CoTex.git .
+   ```
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+2. Install dependencies for both frontend and backend
 
-```sh
-cd my-turborepo
-turbo dev
-```
+   ```
+   cd client
+   npm install
+   cd ../server
+   npm install
+   ```
 
-Without global `turbo`, use your package manager:
+3. Install latex compiler
+   - For Windows: Install MiKTeX from https://miktex.org/download
+   - For Mac OS: Install MacTeX from http://www.tug.org/mactex/
 
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
+4. Create `.env` file in client folder. Paste this
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+   ```
+   VITE_HTTP_SEVER=http://localhost:3000
+   VITE_WS_SEVER=ws://localhost:3000
+   ```
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+5. Create `.env` file in server folder. Paste this and update with your keys
 
-```sh
-turbo dev --filter=web
-```
+   ```
+   PORT=3000
+   CLIENT_URL=http://localhost:5173
+   TOKEN_SECRET=<RANDOM_LONG_STRING>
+   TOKEN_EXPIRY=1d
+   MONGODB_URL=<MONGO_DB_ATLAS_URL>
 
-Without global `turbo`:
+   REDIS_PORT=6379
+   REDIS_HOST=localhost
+   ```
 
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+6. Run Redis server (if not already running)
 
-### Remote Caching
+   ```
+   docker run -d \
+   --name redis \
+   -p 6379:6379 \
+   redis:latest
+   ```
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+7. Start the backend server
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+   ```
+   cd server
+   npm run dev
+   ```
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+8. Start the frontend development server
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+   ```
+   cd client
+   npm run dev
+   ```
 
-```sh
-cd my-turborepo
-turbo login
-```
+9. Open the application in your browser at `http://localhost:5173` and start collaborating on LaTeX documents in real-time!
 
-Without global `turbo`, use your package manager:
+## Running in Docker Environment
 
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
+1. Clone the repository
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+   ```
+   mkdir CoTex
+   cd CoTex
+   git clone https://github.com/tanujsharma911/CoTex.git .
+   ```
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+2. Create `.env.docker` file in client folder. Paste this
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+   ```
+   VITE_HTTP_SEVER=http://localhost:8000
+   VITE_WS_SEVER=ws://localhost:8000
+   ```
 
-```sh
-turbo link
-```
+3. Create `.env.docker` file in server folder. Paste this and update with your keys
 
-Without global `turbo`:
+   ```
+   PORT=3000
+   CLIENT_URL=http://localhost:5175
+   TOKEN_SECRET=<RANDOM_LONG_STRING>
+   TOKEN_EXPIRY=1d
+   MONGODB_URL=<MONGO_DB_ATLAS_URL>
 
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
+   REDIS_PORT=6379
+   REDIS_HOST=localhost
+   ```
 
-## Useful Links
+4. Build tex compiler image
 
-Learn more about the power of Turborepo:
+   ```
+   cd server
+   docker build -t tex-compiler -f Dockerfile.tex .
+   ```
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+5. Start
+
+   ```
+   docker compose up --build
+   ```
+
+6. Open the application in your browser at `http://localhost:5175` and start collaborating on LaTeX documents in real-time!

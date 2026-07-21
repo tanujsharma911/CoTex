@@ -1,0 +1,17 @@
+{
+  "name": "@cotex/auth",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@cotex/eslint-config": "workspace:*",
+    "@cotex/typescript-config": "workspace:*"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3",
+    "@types/jsonwebtoken": "^9.0.10"
+  }
+}
