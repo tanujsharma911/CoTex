@@ -16,12 +16,6 @@ const docsSchema = new mongoose.Schema<docType>(
       type: String,
       required: true,
     },
-    ydocData: {
-      type: Buffer,
-    },
-    pdf: {
-      type: Buffer,
-    },
     visibility: {
       type: String,
       enum: ["private", "public"],

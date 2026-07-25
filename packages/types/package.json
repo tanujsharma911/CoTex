@@ -6,6 +6,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "mongoose": "^9.6.2"
+  },
   "devDependencies": {
     "@cotex/eslint-config": "workspace:*",
     "@cotex/typescript-config": "workspace:*"

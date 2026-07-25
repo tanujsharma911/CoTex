@@ -1,4 +1,4 @@
-import type mongoose from "mongoose";
+import mongoose from "mongoose";
 
 export interface UserType {
   name: string;

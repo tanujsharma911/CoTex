@@ -17,6 +17,7 @@
     "@cotex/constants": "workspace:*",
     "@cotex/eslint-config": "workspace:*",
     "@cotex/redis": "workspace:*",
+    "@cotex/storage": "workspace:*",
     "@cotex/types": "workspace:*",
     "@cotex/typescript-config": "workspace:*",
     "@types/multer": "^2.2.0",

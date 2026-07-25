@@ -1,15 +1,16 @@
-import type { Request, Response } from "express";
-import fs from "fs/promises";
-import path from "path";
-import { exec } from "child_process";
-import * as Y from "yjs";
+import type { Request, Response } from 'express';
+import fs from 'fs/promises';
+import path from 'path';
+import { exec } from 'child_process';
+import * as Y from 'yjs';
 
-import type { docType } from "../models/docs.model.js";
-import { getCompileDir, getLatexCode } from "../utils/utils.js";
-import { lockManager } from "../LockManager.js";
-import type { DocsRepository } from "../repositories/docs.repository.js";
-import { promisify } from "util";
-import { DEFAULT_LATEX_TEMPLATE } from "../config/constants.js";
+import type { docType } from '../models/docs.model.js';
+import { getCompileDir } from '../utils/utils.js';
+import { lockManager } from '../LockManager.js';
+import type { DocsRepository } from '../repositories/docs.repository.js';
+import { promisify } from 'util';
+import { DEFAULT_LATEX_TEMPLATE } from '../config/constants.js';
+import { storage } from '../storage.js';
 
 const executeCommand = promisify(exec);
 
@@ -26,19 +27,19 @@ class DocsController {
 
       const userId = req.user.userId;
 
-      if (!userId) return res.status(401).json({ message: "Unauthorized" });
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
       let docs: docType[] = [];
 
-      if (docId && typeof docId === "string") {
+      if (docId && typeof docId === 'string') {
         const docsTemp = await this.docsRepository.getDoc(docId);
 
         const hasAccess =
-          docsTemp?.ownerId === userId || docsTemp?.visibility === "public";
+          docsTemp?.ownerId === userId || docsTemp?.visibility === 'public';
 
         if (!hasAccess) {
           return res.status(403).json({
-            message: "Forbidden: You do not have access to this document",
+            message: 'Forbidden: You do not have access to this document'
           });
         }
 
@@ -51,14 +52,14 @@ class DocsController {
       }
 
       return res.status(200).json({
-        message: "Document retrieved successfully",
-        data: docs,
+        message: 'Document retrieved successfully',
+        data: docs
       });
     } catch (error) {
-      console.log(error instanceof Error ? error.message : "Unknown error");
+      console.log(error instanceof Error ? error.message : 'Unknown error');
 
       return res.status(500).json({
-        message: "An error occurred while retrieving the document",
+        message: 'An error occurred while retrieving the document'
       });
     }
   };
@@ -67,21 +68,21 @@ class DocsController {
     try {
       const { name, templateCode, visibility } = req.body ?? {};
 
-      if (!name || typeof name !== "string") {
+      if (!name || typeof name !== 'string') {
         res
           .status(400)
-          .json({ message: "Document name is required and must be a string" });
+          .json({ message: 'Document name is required and must be a string' });
         return;
       }
 
-      if (templateCode && typeof templateCode !== "string") {
-        res.status(400).json({ message: "Template code must be a string" });
+      if (templateCode && typeof templateCode !== 'string') {
+        res.status(400).json({ message: 'Template code must be a string' });
         return;
       }
 
       const ydoc = new Y.Doc();
 
-      const ytext = ydoc.getText("sharedLatexCode");
+      const ytext = ydoc.getText('sharedLatexCode');
 
       ytext.insert(0, templateCode || DEFAULT_LATEX_TEMPLATE);
 
@@ -90,7 +91,7 @@ class DocsController {
       const userId = req.user.userId;
 
       if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
+        res.status(401).json({ message: 'Unauthorized' });
         return;
       }
 
@@ -98,42 +99,39 @@ class DocsController {
         name,
         ydocData: dataBuffer,
         ownerId: userId,
-        visibility: visibility || "public",
+        visibility: visibility || 'public',
         deleted: false,
-        editVersion: 0,
+        editVersion: 0
       });
 
       res.status(201).json({
-        message: "Document created successfully",
-        data: newDoc,
+        message: 'Document created successfully',
+        data: newDoc
       });
     } catch (error) {
-      console.log(error instanceof Error ? error.message : "Unknown error");
+      console.log(error instanceof Error ? error.message : 'Unknown error');
 
       res.status(500).json({
-        message: "An error occurred while creating the document",
+        message: 'An error occurred while creating the document'
       });
     }
   };
 
-  /**
-   * Updates meta information of a doc, such as the document name or other properties. The actual content of the document is not updated through this endpoint.
-   */
   public updateDocs = async (req: Request, res: Response) => {
     try {
       const { docId } = req.params ?? {};
       const { name, visibility } = req.body ?? {};
 
-      if (!docId || typeof docId !== "string") {
+      if (!docId || typeof docId !== 'string') {
         res
           .status(400)
-          .json({ message: "Document ID is required and must be a string" });
+          .json({ message: 'Document ID is required and must be a string' });
         return;
       }
       if (!name && !visibility) {
         res
           .status(400)
-          .json({ message: "At least one field to update must be provided" });
+          .json({ message: 'At least one field to update must be provided' });
         return;
       }
 
@@ -142,7 +140,7 @@ class DocsController {
       const doc = await this.docsRepository.getDoc(docId);
 
       if (!doc) {
-        res.status(404).json({ message: "Document not found" });
+        res.status(404).json({ message: 'Document not found' });
         return;
       }
 
@@ -151,25 +149,25 @@ class DocsController {
       if (!isOwner) {
         res.status(403).json({
           message:
-            "Forbidden: You are not the owner of this document and do not have permission to update it",
+            'Forbidden: You are not the owner of this document and do not have permission to update it'
         });
         return;
       }
 
       const updatedDoc = await this.docsRepository.updateDoc(docId, {
         name,
-        visibility,
+        visibility
       });
 
       res.status(200).json({
-        message: "Document updated successfully",
-        data: updatedDoc,
+        message: 'Document updated successfully',
+        data: updatedDoc
       });
     } catch (error) {
-      console.log(error instanceof Error ? error.message : "Unknown error");
+      console.log(error instanceof Error ? error.message : 'Unknown error');
 
       res.status(500).json({
-        message: "An error occurred while updating the document",
+        message: 'An error occurred while updating the document'
       });
     }
   };
@@ -178,24 +176,24 @@ class DocsController {
     try {
       const { docId } = req.params ?? {};
 
-      if (!docId || typeof docId !== "string") {
+      if (!docId || typeof docId !== 'string') {
         res
           .status(400)
-          .json({ message: "Document ID is required and must be a string" });
+          .json({ message: 'Document ID is required and must be a string' });
         return;
       }
 
       const userId = req.user.userId;
 
       if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
+        res.status(401).json({ message: 'Unauthorized' });
         return;
       }
 
       const doc = await this.docsRepository.getDoc(docId);
 
       if (!doc) {
-        res.status(404).json({ message: "Document not found" });
+        res.status(404).json({ message: 'Document not found' });
         return;
       }
 
@@ -204,7 +202,7 @@ class DocsController {
       if (!isUserAuthorized) {
         res.status(403).json({
           message:
-            "Forbidden: You do not have permission to delete this document",
+            'Forbidden: You do not have permission to delete this document'
         });
         return;
       }
@@ -212,13 +210,13 @@ class DocsController {
       await this.docsRepository.deleteDoc(docId);
 
       res.status(200).json({
-        message: "Document deleted successfully",
+        message: 'Document deleted successfully'
       });
     } catch (error) {
-      console.log(error instanceof Error ? error.message : "Unknown error");
+      console.log(error instanceof Error ? error.message : 'Unknown error');
 
       res.status(500).json({
-        message: "An error occurred while deleting the document",
+        message: 'An error occurred while deleting the document'
       });
     }
   };
@@ -226,9 +224,9 @@ class DocsController {
   public compile = async (req: Request, res: Response) => {
     const { docId } = req.params ?? {};
 
-    if (!docId || typeof docId !== "string") {
+    if (!docId || typeof docId !== 'string') {
       res.status(400).json({
-        message: "Document ID and code is required and must be a string",
+        message: 'Document ID and code is required and must be a string'
       });
       return;
     }
@@ -239,7 +237,7 @@ class DocsController {
     if (!lock || lock.release === undefined) {
       return res.status(423).json({
         message:
-          "Document is currently being compiled by another process. Please try again later.",
+          'Document is currently being compiled by another process. Please try again later.'
       });
     }
 
@@ -247,36 +245,37 @@ class DocsController {
       const doc = await this.docsRepository.getDoc(docId);
 
       if (!doc) {
-        res.status(404).json({ message: "Document not found with this ID" });
+        res.status(404).json({ message: 'Document not found with this ID' });
         return;
       }
-      const latexCode = getLatexCode(doc);
+
+      const latexCode = await storage.getLatexCode(docId);
 
       if (!latexCode) {
         return res.status(400).json({
-          message: "Document does not contain any LaTeX code to compile.",
+          message: 'Document does not contain any LaTeX code to compile.'
         });
       }
 
       await fs.mkdir(compileDir, { recursive: true });
 
-      await fs.writeFile(path.join(compileDir, "content.tex"), latexCode);
+      await fs.writeFile(path.join(compileDir, 'content.tex'), latexCode);
 
       try {
         await executeCommand(`pdflatex -interaction=nonstopmode content.tex`, {
           cwd: compileDir,
-          timeout: 30_000, // 30 second timeout
+          timeout: 30_000 // 30 second timeout
         });
       } catch (error: any) {
         return res.status(430).json({
           message:
-            "There is some error in the LaTeX code. Please fix it and try again.",
+            'There is some error in the LaTeX code. Please fix it and try again.',
 
-          error: error.stdout,
+          error: error.stdout
         });
       }
 
-      const pdfPath = path.join(compileDir, "content.pdf");
+      const pdfPath = path.join(compileDir, 'content.pdf');
 
       await fs.access(pdfPath);
 
@@ -284,26 +283,27 @@ class DocsController {
 
       if (!docCurr || docCurr.deleted) {
         res.status(404).json({
-          message: "Document not found with this ID after compilation",
+          message: 'Document not found with this ID after compilation'
         });
         return;
       }
 
-      const updatedDoc = await this.docsRepository.updateDoc(docId, {
-        pdf: await fs.readFile(pdfPath),
-      });
+      const pdfBuffer = await fs.readFile(pdfPath);
+      const pdfKey = await storage.saveCompiledPdf(docId, pdfBuffer);
 
-      // await fs.rm(compileDir, { recursive: true, force: true });
+      const pdfUrl = await storage.getPresignedDownloadUrl(pdfKey);
+
+      await fs.rm(compileDir, { recursive: true, force: true });
 
       return res.status(200).json({
-        message: "Document compiled successfully",
-        data: updatedDoc,
+        message: 'Document compiled successfully',
+        pdfUrl
       });
     } catch (error) {
-      console.log(error instanceof Error ? error.message : "Unknown error");
+      console.log(error instanceof Error ? error.message : 'Unknown error');
 
       res.status(500).json({
-        message: "An error occurred while compiling the document",
+        message: 'An error occurred while compiling the document'
       });
     } finally {
       lock.release();

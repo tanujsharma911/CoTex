@@ -19,6 +19,7 @@
     "@cotex/redis": "workspace:*",
     "@cotex/types": "workspace:*",
     "@cotex/typescript-config": "workspace:*",
+    "@cotex/storage": "workspace:*",
     "tsx": "^4.23.1"
   },
   "dependencies": {

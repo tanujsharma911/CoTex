@@ -1,11 +1,9 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export interface docType {
   name: string;
-  ydocData: Buffer;
-  pdf?: Buffer;
   ownerId: string;
-  visibility: "private" | "public";
+  visibility: 'private' | 'public';
   deleted: boolean;
   editVersion?: number;
 }
@@ -14,34 +12,28 @@ const docsSchema = new mongoose.Schema<docType>(
   {
     name: {
       type: String,
-      required: true,
-    },
-    ydocData: {
-      type: Buffer,
-    },
-    pdf: {
-      type: Buffer,
+      required: true
     },
     visibility: {
       type: String,
-      enum: ["private", "public"],
-      default: "public",
-      required: true,
+      enum: ['private', 'public'],
+      default: 'public',
+      required: true
     },
     ownerId: {
       type: String,
-      required: true,
+      required: true
     },
     deleted: {
       type: Boolean,
-      default: false,
+      default: false
     },
     editVersion: {
       type: Number,
-      default: 0,
-    },
+      default: 0
+    }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-export const Docs = mongoose.model<docType>("Docs", docsSchema);
+export const Docs = mongoose.model<docType>('Docs', docsSchema);

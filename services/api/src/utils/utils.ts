@@ -8,14 +8,14 @@ export const getCompileDir = (docId: string) => {
   return path.join(COMPILE_DIR, docId);
 };
 
-export const getLatexCode = (doc: docType) => {
-  const ydoc = new Y.Doc();
+// export const getLatexCode = (doc: docType) => {
+//   const ydoc = new Y.Doc();
 
-  Y.applyUpdate(ydoc, new Uint8Array(doc.ydocData));
+//   Y.applyUpdate(ydoc, new Uint8Array(doc.ydocData));
 
-  const ytext = ydoc.getText("sharedLatexCode");
+//   const ytext = ydoc.getText("sharedLatexCode");
 
-  const latexCode = ytext.toString();
+//   const latexCode = ytext.toString();
 
-  return latexCode;
-};
+//   return latexCode;
+// };

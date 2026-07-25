@@ -14,5 +14,14 @@ connectDB().then(() => {
 
   const wsServer = new WebSocketServer({ server });
 
-  wsServer.on("connection", wsConnection.handle);
+  wsServer.on("connection", (ws, req) => {
+    const origin = req.headers.origin;
+
+    if (!origin || !config.CORS_ORIGINS.includes(origin)) {
+      ws.close(1008, "Origin not allowed"); // 1008 = policy violation
+      return;
+    }
+  
+    wsConnection.handle(ws, req)
+  });
 });

@@ -21,7 +21,7 @@ const SERVER_ID = randomUUID();
 class WSConnection {
   readonly userRepository: UserRepository = new UserRepository();
   readonly docRepository: DocsRepository = new DocsRepository();
-  private dbUpdateTimers = new Map<string, Function>();
+  // private dbUpdateTimers = new Map<string, Function>();
 
   constructor() {
     this.initRedisSubscriber();
@@ -179,8 +179,6 @@ class WSConnection {
               data: { update: Buffer.from(update).toString('base64') }
             })
           );
-
-          this.updateDBwithDebounce(docId);
           break;
 
         case MessageType.CURSOR_MOVE:
@@ -232,10 +230,6 @@ class WSConnection {
 
     if (!localUsers || localUsers.size === 0) {
       await subClient.unsubscribe(getChannelKey(docId));
-
-      if (this.dbUpdateTimers.has(docId)) {
-        this.dbUpdateTimers.delete(docId);
-      }
     }
   };
 
@@ -271,29 +265,29 @@ class WSConnection {
     }
   };
 
-  private updateDBwithDebounce = (docId: string) => {
-    if (!this.dbUpdateTimers.has(docId)) {
-      const debouncedSave = debounce(async () => {
-        const ydoc = await docManager.getOrCreateDoc(docId);
+  // private updateDBwithDebounce = (docId: string) => {
+  //   if (!this.dbUpdateTimers.has(docId)) {
+  //     const debouncedSave = debounce(async () => {
+  //       const ydoc = await docManager.getOrCreateDoc(docId);
 
-        const update = Y.encodeStateAsUpdate(ydoc);
+  //       const update = Y.encodeStateAsUpdate(ydoc);
 
-        await Docs.findOneAndUpdate(
-          { _id: docId },
-          {
-            $set: { ydocData: Buffer.from(update) },
-            $inc: { editVersion: 1 }
-          },
-          { upsert: true, returnDocument: 'after' }
-        );
-      }, 2000);
+  //       await Docs.findOneAndUpdate(
+  //         { _id: docId },
+  //         {
+  //           $set: { ydocData: Buffer.from(update) },
+  //           $inc: { editVersion: 1 }
+  //         },
+  //         { upsert: true, returnDocument: 'after' }
+  //       );
+  //     }, 2000);
 
-      this.dbUpdateTimers.set(docId, debouncedSave);
-    }
+  //     this.dbUpdateTimers.set(docId, debouncedSave);
+  //   }
 
-    // Execute the specific document's debounced function
-    this.dbUpdateTimers.get(docId)!();
-  };
+  //   // Execute the specific document's debounced function
+  //   this.dbUpdateTimers.get(docId)!();
+  // };
 }
 
 export const wsConnection = new WSConnection();
