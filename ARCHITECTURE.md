@@ -81,14 +81,27 @@ User A                WebSocket Server           User B
 
 **Stores**:
 ```
+cotex-bucket/
+├── projects/{projectId}/source/main.tex
+├── projects/{projectId}/source/chapter1.tex     <- future: multi-file support
+├── projects/{projectId}/output/main.pdf
+├── projects/{projectId}/output/build.log
+└── projects/{projectId}/assets/{uploadId}.png   <- future: user file uploads
+```
+
+How users will see
+```
 projects/{projectId}/
-  ├── assets/           (user uploads)
+  ├── main.tex
+  ├── chapter1.tex      (Future: multi-file support)
+  ├── assets/           (Future: user uploads)
   │   ├── image1.png
   │   ├── figure.pdf
   │   └── data.csv
   └── output/           (compilation results)
       ├── main.pdf
-      └── build.log
+      ├── main.aux
+      └── main.log
 ```
 
 **Access Patterns**:

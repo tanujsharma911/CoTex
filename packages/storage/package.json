@@ -1,0 +1,19 @@
+{
+  "name": "@cotex/storage",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "@aws-sdk/s3-request-presigner": "^3.1095.0",
+    "minio": "^8.0.7"
+  },
+  "devDependencies": {
+    "@cotex/eslint-config": "workspace:*",
+    "@cotex/typescript-config": "workspace:*",
+    "@types/node": "^24.13.3"
+  }
+}

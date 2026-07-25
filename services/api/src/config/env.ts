@@ -8,8 +8,8 @@ export const config = {
   TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '1d', // Token expiry time
   MONGODB_URL: process.env.MONGODB_URL,
 
-  MINIO_ENDPOINT: process.env.MINIO_ENDPOINT || 'localhost',
-  MINIO_PORT: parseInt(process.env.MINIO_PORT || '7000'),
-  MINIO_ROOT_USER: process.env.MINIO_ROOT_USER || 'admin',
-  MINIO_ROOT_PASSWORD: process.env.MINIO_ROOT_PASSWORD || 'password'
+  MINIO_URL: process.env.MINIO_URL || 'http://localhost:9000',
+  MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY || 'cotex',
+  MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY || 'password',
+  MINIO_BUCKET: process.env.MINIO_BUCKET || 'cotex'
 };

@@ -8,7 +8,6 @@ import {
 
 import { useAuthStore } from '../store/useAuthStore';
 import ThemeToggleApp from './ThemeToggleApp';
-import { useEffect } from 'react';
 
 const NavBar = () => {
   const { isAuthenticated } = useAuthStore();

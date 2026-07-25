@@ -38,6 +38,6 @@ docsRoute.put("/:docId", authMiddleware, docsController.updateDocs);
  */
 docsRoute.delete("/:docId", authMiddleware, docsController.deleteDocs);
 
-docsRoute.get("/compile/:docId", authMiddleware, docsController.compile);
+docsRoute.get("/:docId/compile/", authMiddleware, docsController.compile);
 
 export { docsRoute };

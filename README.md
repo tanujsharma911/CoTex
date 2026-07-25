@@ -70,6 +70,7 @@
 
 ## Local Setup Instructions
 
+Setup license for minio
 1. Clone the repository
 
    ```

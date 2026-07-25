@@ -293,7 +293,7 @@ class DocsController {
         pdf: await fs.readFile(pdfPath),
       });
 
-      await fs.rm(compileDir, { recursive: true, force: true });
+      // await fs.rm(compileDir, { recursive: true, force: true });
 
       return res.status(200).json({
         message: "Document compiled successfully",
