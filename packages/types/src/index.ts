@@ -1,5 +1,16 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
+export interface docType {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  ownerId: string;
+  pdfUrl?: string;
+  visibility: 'private' | 'public';
+  deleted: boolean;
+  editVersion?: number;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface UserType {
   name: string;
   email: string;
@@ -14,20 +25,20 @@ export interface UserMethods {
 
 export type UserDocument = mongoose.HydratedDocument<UserType, UserMethods>;
 
-// export interface editingUser {
-//   name: string;
-//   userId: string;
-//   selection: {
-//     anchor?: {
-//       lineNumber?: number;
-//       column?: number;
-//     };
-//     head?: {
-//       lineNumber?: number;
-//       column?: number;
-//     };
-//   };
-// }
+export interface editingUser {
+  name: string;
+  userId: string;
+  selection: {
+    anchor?: {
+      lineNumber?: number;
+      column?: number;
+    };
+    head?: {
+      lineNumber?: number;
+      column?: number;
+    };
+  };
+}
 
 export interface GlobalUserData {
   userId: string;

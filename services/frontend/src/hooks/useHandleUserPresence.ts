@@ -2,17 +2,18 @@ import React, { useEffect, useRef } from 'react';
 import { injectCursorStyleOnlyOneTime } from '@/lib/editor.utils';
 import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
-import type { AuthUser, editingUser } from '@/types';
+import type { AuthUser } from '@/types';
+import type { editingUser } from '@cotex/types';
 
 export const useHandleUserPresence = ({
   editorRef,
   monacoRef,
-  users,
+  editors,
   currUser
 }: {
   editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>;
   monacoRef: React.RefObject<Monaco | null>;
-  users: editingUser[];
+  editors: editingUser[];
   currUser: AuthUser | undefined;
 }) => {
   const decorationIdsRef = useRef<string[]>([]);
@@ -20,7 +21,7 @@ export const useHandleUserPresence = ({
   useEffect(() => {
     if (!editorRef.current || !monacoRef.current) return;
 
-    const remoteUsers = users.filter((user) => user.userId !== currUser?._id);
+    const remoteUsers = editors.filter((user) => user.userId !== currUser?._id);
 
     const newDecorations = remoteUsers
       .filter(
@@ -59,5 +60,5 @@ export const useHandleUserPresence = ({
       decorationIdsRef.current,
       newDecorations
     );
-  }, [users, currUser]);
+  }, [editors, currUser]);
 };

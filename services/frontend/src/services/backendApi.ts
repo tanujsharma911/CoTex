@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 
-import type {
-  ApiResponse,
-  AuthPayload,
-  docType,
-  LogoutPayload
-} from '../types';
+import type { ApiResponse, AuthPayload, LogoutPayload } from '../types';
 import { config } from '../config/env';
+import type { docType } from '@cotex/types';
 
 class BackendApi {
   private axiosInstance: ReturnType<typeof axios.create>;
@@ -235,7 +231,7 @@ class BackendApi {
       throw new Error('Token is required to compile a document');
     }
     try {
-      const response = await this.axiosInstance.get(`/docs/compile/${docId}`, {
+      const response = await this.axiosInstance.get(`/docs/${docId}/compile`, {
         params: {
           token: token
         }

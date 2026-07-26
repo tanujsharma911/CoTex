@@ -4,13 +4,13 @@ import path from 'path';
 import { exec } from 'child_process';
 import * as Y from 'yjs';
 
-import type { docType } from '../models/docs.model.js';
 import { getCompileDir } from '../utils/utils.js';
 import { lockManager } from '../LockManager.js';
 import type { DocsRepository } from '../repositories/docs.repository.js';
 import { promisify } from 'util';
 import { DEFAULT_LATEX_TEMPLATE } from '../config/constants.js';
 import { storage } from '../storage.js';
+import type { docType } from '@cotex/types';
 
 const executeCommand = promisify(exec);
 
@@ -80,14 +80,6 @@ class DocsController {
         return;
       }
 
-      const ydoc = new Y.Doc();
-
-      const ytext = ydoc.getText('sharedLatexCode');
-
-      ytext.insert(0, templateCode || DEFAULT_LATEX_TEMPLATE);
-
-      const dataBuffer = Buffer.from(Y.encodeStateAsUpdate(ydoc));
-
       const userId = req.user.userId;
 
       if (!userId) {
@@ -97,12 +89,21 @@ class DocsController {
 
       const newDoc = await this.docsRepository.createDoc({
         name,
-        ydocData: dataBuffer,
         ownerId: userId,
         visibility: visibility || 'public',
         deleted: false,
         editVersion: 0
       });
+
+      if (!newDoc) {
+        res.status(404).json({ message: 'Failed to create document' });
+        return;
+      }
+
+      await storage.saveLatexCode(
+        newDoc._id.toString(),
+        DEFAULT_LATEX_TEMPLATE
+      );
 
       res.status(201).json({
         message: 'Document created successfully',

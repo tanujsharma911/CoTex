@@ -3,7 +3,7 @@ import debounce, { type DebouncedFunction } from 'debounce';
 
 import { storage } from './storage.js';
 import { DocsRepository } from './repositories/docs.repository.js';
-import { YDOC_MAIN_LATEX } from './config/constants.js';
+import { YDOC_MAIN_LATEX } from '@cotex/constants';
 
 class DocManager {
   private docId_doc: Map<string, Y.Doc> = new Map(); // docId -> Y.Doc
@@ -25,9 +25,7 @@ class DocManager {
         if (latexCode) {
           ydoc.getText(YDOC_MAIN_LATEX).insert(0, latexCode);
         }
-      } catch {
-        console.log(`No existing source for ${docId}, starting fresh`);
-      }
+      } catch {}
 
       this.docId_doc.set(docId, ydoc);
     }

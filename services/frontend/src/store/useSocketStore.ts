@@ -1,5 +1,5 @@
-import type { SocketStore } from "@/types";
-import { create } from "zustand";
+import type { SocketStore } from '@/types';
+import { create } from 'zustand';
 
 const handleConnect = ({
   token,
@@ -7,12 +7,13 @@ const handleConnect = ({
   docId,
   get,
   set,
-}: {
-  token: string;
-  url: string;
-  docId: string;
+  messageListeners,
+  connectListeners
+}: Parameters<SocketStore['connect']>[0] & {
   get: () => SocketStore;
   set: (state: Partial<SocketStore>) => void;
+  messageListeners: Set<(event: MessageEvent) => void>;
+  connectListeners: Set<() => void>;
 }) => {
   const state = get();
 
@@ -29,17 +30,22 @@ const handleConnect = ({
   set({ socket: ws });
 
   ws.onopen = () => {
-    console.log("useWebSocket :: connection established");
+    console.log('useWebSocket :: connection established');
     set({ isConnected: true });
+    connectListeners.forEach((listener) => listener());
   };
 
+  ws.addEventListener('message', (event) => {
+    messageListeners.forEach((listener) => listener(event));
+  });
+
   ws.onclose = () => {
-    console.log("useWebSocket :: connection closed");
+    console.log('useWebSocket :: connection closed');
     set({ isConnected: false });
   };
 
   ws.onerror = (error) => {
-    console.error("useWebSocket :: connection error", error);
+    console.error('useWebSocket :: connection error', error);
     set({ isConnected: false });
   };
 
@@ -48,7 +54,7 @@ const handleConnect = ({
 
 const handleDisconnect = ({
   get,
-  set,
+  set
 }: {
   get: () => SocketStore;
   set: (state: Partial<SocketStore>) => void;
@@ -61,19 +67,36 @@ const handleDisconnect = ({
   }
 };
 
-export const useSocketStore = create<SocketStore>((set, get) => ({
-  socket: null,
-  isConnected: false,
-  connect: ({
-    token,
-    url,
-    docId,
-  }: {
-    token: string;
-    url: string;
-    docId: string;
-  }) => handleConnect({ token, url, docId, get, set }),
-  disconnect: () => handleDisconnect({ get, set }),
-  setSocket: (socket: WebSocket | null) => set({ socket }),
-  setIsConnected: (isConnected: boolean) => set({ isConnected }),
-}));
+export const useSocketStore = create<SocketStore>((set, get) => {
+  const messageListeners = new Set<(event: MessageEvent) => void>();
+  const connectListeners = new Set<() => void>();
+
+  return {
+    socket: null,
+
+    isConnected: false,
+
+    connect: (args) =>
+      handleConnect({
+        ...args,
+        get,
+        set,
+        messageListeners,
+        connectListeners
+      }),
+
+    send: (message) => get().socket?.send(JSON.stringify(message)),
+
+    onMessage: (callback: (event: MessageEvent) => void) => {
+      messageListeners.add(callback);
+      return () => messageListeners.delete(callback);
+    },
+
+    onConnect: (callback: () => void) => {
+      connectListeners.add(callback);
+      return () => connectListeners.delete(callback);
+    },
+
+    disconnect: () => handleDisconnect({ get, set })
+  };
+});

@@ -1,14 +1,5 @@
+import type { docType } from "@cotex/types";
 import mongoose from "mongoose";
-
-export interface docType {
-  name: string;
-  ydocData: Buffer;
-  pdf?: Buffer;
-  ownerId: string;
-  visibility: "private" | "public";
-  deleted: boolean;
-  editVersion?: number;
-}
 
 const docsSchema = new mongoose.Schema<docType>(
   {

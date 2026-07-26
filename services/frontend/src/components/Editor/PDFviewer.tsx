@@ -1,19 +1,20 @@
-import { useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-import { ButtonGroup } from "@/components/ui/button-group";
-import { MinusIcon, PlusIcon } from "lucide-react";
+import { useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import { ButtonGroup } from '@/components/ui/button-group';
+import { MinusIcon, PlusIcon } from 'lucide-react';
 
-import "react-pdf/dist/Page/TextLayer.css";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import { Button } from "../ui/button";
+import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import { Button } from '../ui/button';
+import type { docType } from '@cotex/types';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export function PDFViewer({
-  buffer,
-  error,
+  pdfUrl,
+  error
 }: {
-  buffer: ArrayBuffer | null;
+  pdfUrl: string;
   error: string;
 }) {
   const [showTools, setShowTools] = useState<boolean>(false);
@@ -32,7 +33,7 @@ export function PDFViewer({
     );
   }
 
-  if (!buffer) {
+  if (!pdfUrl) {
     return (
       <div className="text-center my-auto text-zinc-800">
         Generate PDF to view
@@ -48,9 +49,9 @@ export function PDFViewer({
     >
       <div className="overflow-auto h-full">
         <Document
-          file={{ data: buffer }}
+          file={pdfUrl}
           onLoadSuccess={onDocumentLoadSuccess}
-          className={`grid ${zoom < 0.5 ? "grid-cols-2" : "grid-cols-1"}`}
+          className={`grid ${zoom < 0.5 ? 'grid-cols-2' : 'grid-cols-1'}`}
         >
           {Array.from(new Array(numPages), (_el, index) => (
             <Page

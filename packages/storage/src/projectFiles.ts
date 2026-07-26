@@ -26,6 +26,7 @@ export class S3Client {
 
   public saveLatexCode = async (docId: string, latexContent: string) => {
     const key = `projects/${docId}/main.tex`;
+
     await this.s3.send(
       new PutObjectCommand({
         Bucket: this.BUCKET_NAME,
@@ -34,19 +35,23 @@ export class S3Client {
         ContentType: 'text/x-tex'
       })
     );
+
     return key;
   };
 
   public getLatexCode = async (docId: string): Promise<string> => {
     const key = `projects/${docId}/main.tex`;
+
     const obj = await this.s3.send(
       new GetObjectCommand({ Bucket: this.BUCKET_NAME, Key: key })
     );
+
     return streamToString(obj.Body as Readable);
   };
 
   public saveCompiledPdf = async (docId: string, pdfBuffer: Buffer) => {
     const key = `projects/${docId}/output/main.pdf`;
+
     await this.s3.send(
       new PutObjectCommand({
         Bucket: this.BUCKET_NAME,
@@ -55,6 +60,7 @@ export class S3Client {
         ContentType: 'application/pdf'
       })
     );
+
     return key;
   };
 
@@ -63,6 +69,7 @@ export class S3Client {
       Bucket: this.BUCKET_NAME,
       Key: key
     });
+
     return getSignedUrl(this.s3, command, {
       expiresIn: this.PDF_URL_EXPIRES_IN_SECONDS
     });

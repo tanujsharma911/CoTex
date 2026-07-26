@@ -55,31 +55,31 @@ PDFs (Compiled):
 
 ```
 User A                WebSocket Server           User B
-  │                          │                     │
-  ├─ Connect (ws) ──────────►│                     │
-  │                          │                     │
-  │                          │◄──── Connect (xs) ──┤
-  │                          │                     │
-  │                          │                     │
-  ├─ Edit Document ─────────►│                     │
-  │  (YJS update)            │                     │
-  │                          ├──── Broadcast ─────►│
-  │                          │   (YJS update)      │
-  │                          │                     │
-  │◄─────── Broadcast ───────┤◄──── Edit ──────────┤
-  │                          │                     │
-  │                          ▼                     │
-  │                     Update DB                  │
-  │                  (with debounce)               │
+  │                          │                      │
+  ├─ SYNC_STEP1 (State Vector) ►│                      │
+  │◄──── SYNC_STEP2 (Diff update) ───┤                      │
+  │                          │                      │
+  │                          │◄───── Connect (State Vector) ──┤
+  │                          ├─ Sends Doc(LaTeX) ──►│
+  │                          │                      │
+  ├─ Edit Document ─────────►│                      │
+  │  (YJS update)            │                      │
+  │                          ├──── Broadcast ──────►│
+  │                          │   (YJS update)       │
+  │                          │                      │
+  │◄─────── Broadcast ───────┤◄──── Edit ───────────┤
+  │                          │                      │
+  │                          ▼                      │
+  │                     Update DB                   │
+  │                  (with debounce)                │
 ```
-
-
 
 ### MinIO/S3 (Object Storage future implementation)
 
 **Why**: Infinite scalability, cheap, CDN-ready
 
 **Stores**:
+
 ```
 cotex-bucket/
 ├── projects/{projectId}/source/main.tex
@@ -90,6 +90,7 @@ cotex-bucket/
 ```
 
 How users will see
+
 ```
 projects/{projectId}/
   ├── main.tex
@@ -105,6 +106,7 @@ projects/{projectId}/
 ```
 
 **Access Patterns**:
+
 - Direct uploads via presigned URLs
 - Streaming downloads
 - Automatic expiration for build artifacts
@@ -114,6 +116,7 @@ projects/{projectId}/
 **Why**: Fast in-memory operations, pub/sub
 
 **Data Structures**:
+
 ```
 doc:{docId} → Channel for YJS updates, Share editors presence
 presence:{docId}:{userId} → hash of user presence info (name, cursor position)
@@ -124,6 +127,7 @@ presence:{docId}:{userId} → hash of user presence info (name, cursor position)
 ### Why CRDT (Conflict-free Replicated Data Type)?
 
 Traditional approaches (OT - Operational Transform) require a central server to serialize all operations. CRDTs allow:
+
 - Offline editing
 - P2P sync
 - No central authority needed
@@ -133,11 +137,13 @@ Traditional approaches (OT - Operational Transform) require a central server to 
 
 ```markdown
 # Per server maintains:
+
 1. Active connections per document
 2. Latest document state
 3. Broadcasts updates or editor presence to all clients
 
 # Client responsibilities:
+
 1. Send local changes as YJS updates or cursor presence
 2. Apply remote updates to local document
 ```
@@ -191,8 +197,8 @@ On client connect:
 ### Authorization
 
 - **Ownership**:
-     - Private Doc: Users can only access their own projects
-     - Public Doc: Anyone can edit doc if they have the link
+  - Private Doc: Users can only access their own projects
+  - Public Doc: Anyone can edit doc if they have the link
 - **Future**: Add collaborators table for shared projects
 
 ### API Security

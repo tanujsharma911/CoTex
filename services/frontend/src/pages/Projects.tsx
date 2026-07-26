@@ -27,11 +27,11 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { backendApi } from '@/services/backendApi';
-import type { docType } from '@/types';
-import { downloadFile, generatePDF } from '@/lib/pdf';
+import { downloadFile } from '@/lib/pdf';
 import { Spinner } from '@/components/ui/spinner';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import type { docType } from '@cotex/types';
 
 const Projects = () => {
   const { token } = useAuthStore();
@@ -100,16 +100,16 @@ const Projects = () => {
     onSuccess: (response, docId) => {
       const pdfBuffer = response.data.pdf.data;
 
-      const uint8Array = new Uint8Array(pdfBuffer);
+      // const uint8Array = new Uint8Array(pdfBuffer);
 
-      const url = generatePDF(uint8Array);
+      // // const url = generatePDF(uint8Array);
 
-      if (!url) {
-        toast.error('Failed to generate PDF URL');
-        return;
-      }
+      // if (!url) {
+      //   toast.error('Failed to generate PDF URL');
+      //   return;
+      // }
 
-      downloadFile(url, `project-${docId}.pdf`);
+      // downloadFile(url, `project-${docId}.pdf`);
     }
   });
 
@@ -197,11 +197,11 @@ const Projects = () => {
           <ul className="mt-5">
             {docs.map((doc, index) => {
               return (
-                <div key={doc._id}>
+                <div key={doc._id.toString()}>
                   <li className="p-4 flex justify-between items-center hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all">
                     <div className="flex flex-col justify-center">
                       <Link
-                        to={`/edit/${doc._id}`}
+                        to={`/edit/${doc._id.toString()}`}
                         className="text-xl transition-all flex items-center gap-4"
                       >
                         {doc.name}
@@ -216,7 +216,7 @@ const Projects = () => {
                     <div className="flex items-center">
                       <Button
                         variant="ghost"
-                        onClick={() => downloadPDF.mutate(doc._id)}
+                        onClick={() => downloadPDF.mutate(doc._id.toString())}
                         disabled={downloadPDF.isPending}
                       >
                         {downloadPDF.isPending ? (
@@ -227,7 +227,7 @@ const Projects = () => {
                       </Button>
 
                       <Button
-                        onClick={() => deleteProject.mutate(doc._id)}
+                        onClick={() => deleteProject.mutate(doc._id.toString())}
                         variant="ghost"
                         disabled={deleteProject.isPending}
                       >

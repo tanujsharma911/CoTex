@@ -1,7 +1,7 @@
-import WebSocket from "ws";
-import type { GlobalUserData } from "@cotex/shared-types";
-import { getPresenceKey } from "./utils/utils.js";
-import { pubClient } from "./redis.client.js";
+import WebSocket from 'ws';
+import type { GlobalUserData } from '@cotex/types';
+import { getPresenceKey } from './utils/utils.js';
+import { pubClient } from './redis.client.js';
 
 class User {
   public userId: string;
@@ -11,7 +11,7 @@ class User {
   constructor({
     userId,
     name,
-    socket,
+    socket
   }: {
     userId: string;
     name: string;
@@ -29,7 +29,7 @@ class UserManager {
   // 1. LOCAL STATE: Manages active WebSockets connected ONLY to this node
   public addLocalUser = (
     userId: string,
-    user: { userId: string; name: string; socket: WebSocket },
+    user: { userId: string; name: string; socket: WebSocket }
   ) => {
     const userObj = new User(user);
     this.localUsers.set(userId, userObj);
@@ -39,7 +39,7 @@ class UserManager {
     const user = this.localUsers.get(userId);
 
     if (user && user.socket.readyState === WebSocket.OPEN) {
-      user.socket.close(1000, "Connection closed by server");
+      user.socket.close(1000, 'Connection closed by server');
     }
 
     this.localUsers.delete(userId);
@@ -49,11 +49,16 @@ class UserManager {
     return this.localUsers.get(userId);
   };
 
-  public sendMessageToLocalUser = (userId: string, message: string) => {
+  public sendMessageToLocalUser = (
+    userId: string,
+    message: string | Object
+  ) => {
     const user = this.getLocalUser(userId);
 
     if (user && user.socket.readyState === WebSocket.OPEN) {
-      user.socket.send(message);
+      user.socket.send(
+        typeof message === 'string' ? message : JSON.stringify(message)
+      );
     }
   };
 
@@ -61,7 +66,7 @@ class UserManager {
   public setGlobalPresence = async (
     docId: string,
     userId: string,
-    userData: GlobalUserData,
+    userData: GlobalUserData
   ) => {
     const presenceKey = getPresenceKey(docId);
     await pubClient.hset(presenceKey, userId, JSON.stringify(userData));
@@ -73,13 +78,13 @@ class UserManager {
   };
 
   public getAllUsersInDoc = async (
-    docId: string,
+    docId: string
   ): Promise<GlobalUserData[]> => {
     const presenceKey = getPresenceKey(docId);
     const allUsers = await pubClient.hgetall(presenceKey);
 
     return Object.values(allUsers).map(
-      (userStr) => JSON.parse(userStr as string) as GlobalUserData,
+      (userStr) => JSON.parse(userStr as string) as GlobalUserData
     );
   };
 }

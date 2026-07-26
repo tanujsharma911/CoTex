@@ -2,28 +2,30 @@ import {
   Avatar,
   AvatarFallback,
   AvatarGroup,
-  AvatarGroupCount,
-} from "@/components/ui/avatar";
-import type { editingUser } from "@/types";
+  AvatarGroupCount
+} from '@/components/ui/avatar';
+import type { editingUser } from '@cotex/types';
 
-function ShowEditors({ users }: { users: editingUser[] }) {
-  if (!users || users.length <= 1) {
+function ShowEditors({ editors }: { editors: editingUser[] }) {
+  if (!editors || editors.length <= 1) {
     return null;
   }
   return (
     <AvatarGroup>
-      {users.slice(0, Math.min(3, users.length)).map((user, index: number) => {
-        const name = user?.name?.toUpperCase().slice(0, 2) || "NA";
-        return (
-          <Avatar key={index}>
-            <AvatarFallback className="text-zinc-900 dark:text-white">
-              {name}
-            </AvatarFallback>
-          </Avatar>
-        );
-      })}
-      {users.length > 3 && (
-        <AvatarGroupCount>{users.length - 3}+</AvatarGroupCount>
+      {editors
+        .slice(0, Math.min(3, editors.length))
+        .map((user, index: number) => {
+          const name = user?.name?.toUpperCase().slice(0, 2) || 'NA';
+          return (
+            <Avatar key={index}>
+              <AvatarFallback className="text-foreground">
+                {name}
+              </AvatarFallback>
+            </Avatar>
+          );
+        })}
+      {editors.length > 3 && (
+        <AvatarGroupCount>{editors.length - 3}+</AvatarGroupCount>
       )}
     </AvatarGroup>
   );

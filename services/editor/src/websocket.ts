@@ -5,7 +5,7 @@ import debounce from 'debounce';
 import { docManager } from './DocManager.js';
 import { userManager } from './UserManager.js';
 import { REDIS_CHANNEL_DOC } from './config/constants.js';
-import { MessageType } from '@cotex/constants';
+import { MessageType, YDOC_MAIN_LATEX } from '@cotex/constants';
 
 import { UserRepository } from './repositories/user.repository.js';
 import { DocsRepository } from './repositories/docs.repository.js';
@@ -15,6 +15,7 @@ import { randomUUID } from 'crypto';
 import WebSocket from 'ws';
 import type { MessageEvent } from 'ws';
 import { pubClient, subClient } from './redis.client.js';
+import { storage } from './storage.js';
 
 const SERVER_ID = randomUUID();
 
@@ -122,7 +123,7 @@ class WSConnection {
       docManager.addUserToDoc(docId, userId);
 
       ws.onmessage = (event) =>
-        this.handleMessages(ws, event, docId, userId, userData);
+        this.handleMessages(event, docId, userId, userData);
 
       // Send doc content to new joinee
       await this.sendDocUpdatesTo(docId, userId);
@@ -132,13 +133,12 @@ class WSConnection {
 
       ws.onclose = () => this.handleOnClose(userId, docId);
     } catch (error: any) {
-      console.error('websocket :: handle ::', error.message);
+      console.error('websocket :: handle ::', error);
       ws.close(1011, 'Unauthorized');
     }
   };
 
   public handleMessages = async (
-    ws: WebSocket,
     event: MessageEvent,
     docId: string,
     userId: string,
@@ -161,7 +161,7 @@ class WSConnection {
 
       const CHANNEL = getChannelKey(docId);
 
-      // console.log("Received message:", message.type);
+      // console.log('Received message:', message.type);
 
       switch (message.type) {
         case MessageType.EDIT:
@@ -205,6 +205,19 @@ class WSConnection {
 
           break;
 
+        case MessageType.SYNC_STEP1:
+          const doc = await docManager.getOrCreateDoc(docId);
+          const clientSV = new Uint8Array(message.stateVector);
+
+          const diff = Y.encodeStateAsUpdate(doc, clientSV); // diff update: Client does not this
+
+          userManager.sendMessageToLocalUser(userId, {
+            type: MessageType.SYNC_STEP2,
+            update: Array.from(diff)
+          });
+
+          break;
+
         default:
           console.log('Unknown message type:', message.type);
       }
@@ -215,8 +228,6 @@ class WSConnection {
   };
 
   public handleOnClose = async (userId: string, docId: string) => {
-    console.log('Connection closed');
-
     userManager.removeLocalUser(userId);
 
     await userManager.removeGlobalPresence(docId, userId);
@@ -249,9 +260,7 @@ class WSConnection {
   };
 
   private sendDocUpdatesTo = async (docId: string, userId: string) => {
-    const ydoc = await docManager.getOrCreateDoc(docId);
-
-    const update = Y.encodeStateAsUpdate(ydoc);
+    const latexCode = await storage.getLatexCode(docId);
 
     const user = userManager.getLocalUser(userId);
 
@@ -259,35 +268,11 @@ class WSConnection {
       user.socket.send(
         JSON.stringify({
           type: MessageType.DOC_UPDATE,
-          update: Buffer.from(update)
+          code: latexCode
         })
       );
     }
   };
-
-  // private updateDBwithDebounce = (docId: string) => {
-  //   if (!this.dbUpdateTimers.has(docId)) {
-  //     const debouncedSave = debounce(async () => {
-  //       const ydoc = await docManager.getOrCreateDoc(docId);
-
-  //       const update = Y.encodeStateAsUpdate(ydoc);
-
-  //       await Docs.findOneAndUpdate(
-  //         { _id: docId },
-  //         {
-  //           $set: { ydocData: Buffer.from(update) },
-  //           $inc: { editVersion: 1 }
-  //         },
-  //         { upsert: true, returnDocument: 'after' }
-  //       );
-  //     }, 2000);
-
-  //     this.dbUpdateTimers.set(docId, debouncedSave);
-  //   }
-
-  //   // Execute the specific document's debounced function
-  //   this.dbUpdateTimers.get(docId)!();
-  // };
 }
 
 export const wsConnection = new WSConnection();

@@ -1,1 +1,1 @@
-export const LATEX_CONTENT_KEY = 'latex';
+export const YDOC_MAIN_LATEX = 'main';

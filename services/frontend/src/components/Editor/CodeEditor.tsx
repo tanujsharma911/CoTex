@@ -6,17 +6,18 @@ import { editor } from 'monaco-editor';
 import * as Y from 'yjs';
 import { MonacoBinding } from 'y-monaco';
 import { useAuthStore } from '@/store/useAuthStore';
-import type { editingUser } from '@/types';
 import { useThemeStore } from '@/store/useThemeStore';
 import { setupMonaco } from './setup';
+import { YDOC_MAIN_LATEX } from '@cotex/constants';
+import type { editingUser } from '@cotex/types';
 
 export function CodeEditor({
-  sharedDocRef,
+  ydocRef,
   ref,
   monacoRef,
   onCursorMove
 }: {
-  sharedDocRef: React.RefObject<Y.Doc | null>;
+  ydocRef: React.RefObject<Y.Doc | null>;
   ref: React.RefObject<editor.IStandaloneCodeEditor | null>;
   monacoRef: React.RefObject<typeof editor | null>;
   onCursorMove: (cursorDetails: editingUser['selection']) => void;
@@ -61,12 +62,12 @@ export function CodeEditor({
       console.log('CollaborativeEditor :: editor model is null');
       return;
     }
-    if (!sharedDocRef.current) {
+    if (!ydocRef.current) {
       console.log('CollaborativeEditor :: sharedDocRef is null');
       return;
     }
 
-    const sharedLatexCode = sharedDocRef.current.getText('sharedLatexCode');
+    const sharedLatexCode = ydocRef.current.getText(YDOC_MAIN_LATEX);
 
     // Bind Yjs to Monaco
     bindingRef.current = new MonacoBinding(

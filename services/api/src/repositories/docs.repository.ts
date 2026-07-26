@@ -1,11 +1,12 @@
-import mongoose from "mongoose";
-import { Docs, type docType } from "../models/docs.model.js";
+import mongoose from 'mongoose';
+import { Docs } from '../models/docs.model.js';
+import type { docType } from '@cotex/types';
 
 class DocsRepository {
   public async createDoc(docData: Partial<docType>): Promise<docType | null> {
     const doc = new Docs(docData);
 
-    return doc.save();
+    return await doc.save();
   }
 
   public async getDoc(docId: string): Promise<docType | null> {
@@ -16,12 +17,12 @@ class DocsRepository {
 
   public async updateDoc(
     docId: string,
-    updateData: Partial<docType>,
+    updateData: Partial<docType>
   ): Promise<docType | null> {
     const id = new mongoose.Types.ObjectId(docId);
 
     return await Docs.findOneAndUpdate({ _id: id }, updateData, {
-      returnDocument: "after",
+      returnDocument: 'after'
     });
   }
 
@@ -29,7 +30,7 @@ class DocsRepository {
     return await Docs.findOneAndUpdate(
       { _id: docId },
       { deleted: true },
-      { returnDocument: "after" },
+      { returnDocument: 'after' }
     );
   }
 
