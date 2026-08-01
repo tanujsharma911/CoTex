@@ -1,12 +1,13 @@
 import {
   PutObjectCommand,
   GetObjectCommand,
-  S3Client as S3ClientSdk
+  S3Client as S3ClientSdk,
+  ListObjectsV2Command,
+  DeleteObjectCommand
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './client.js';
-import { streamToString } from './utils.js';
-import { Readable } from 'stream';
+import { ContentType } from '@cotex/constants';
 
 export class S3Client {
   private readonly PDF_URL_EXPIRES_IN_SECONDS = 300;
@@ -24,44 +25,50 @@ export class S3Client {
     this.BUCKET_NAME = args.bucketName;
   }
 
-  public saveLatexCode = async (docId: string, latexContent: string) => {
-    const key = `projects/${docId}/main.tex`;
+  public saveProjectFile = async (
+    docId: string,
+    relativePath: string,
+    content: Buffer | string,
+    contentType: ContentType
+  ) => {
+    const key = `projects/${docId}/${relativePath}`;
 
     await this.s3.send(
       new PutObjectCommand({
         Bucket: this.BUCKET_NAME,
         Key: key,
-        Body: latexContent,
-        ContentType: 'text/x-tex'
+        Body: content,
+        ContentType: contentType
       })
     );
 
     return key;
   };
 
-  public getLatexCode = async (docId: string): Promise<string> => {
-    const key = `projects/${docId}/main.tex`;
+  public getProjectFile = async (
+    docId: string,
+    relativePath: string
+  ): Promise<Buffer> => {
+    const key = `projects/${docId}/${relativePath}`;
 
     const obj = await this.s3.send(
       new GetObjectCommand({ Bucket: this.BUCKET_NAME, Key: key })
     );
 
-    return streamToString(obj.Body as Readable);
+    return Buffer.from(await obj.Body!.transformToByteArray());
   };
 
-  public saveCompiledPdf = async (docId: string, pdfBuffer: Buffer) => {
-    const key = `projects/${docId}/output/main.pdf`;
+  public listProjectFiles = async (docId: string): Promise<string[]> => {
+    const prefix = `projects/${docId}`;
 
-    await this.s3.send(
-      new PutObjectCommand({
+    const result = await this.s3.send(
+      new ListObjectsV2Command({
         Bucket: this.BUCKET_NAME,
-        Key: key,
-        Body: pdfBuffer,
-        ContentType: 'application/pdf'
+        Prefix: prefix
       })
     );
 
-    return key;
+    return (result.Contents ?? []).map((obj) => obj.Key!.replace(prefix, ''));
   };
 
   public getPresignedDownloadUrl = async (key: string): Promise<string> => {
@@ -73,5 +80,16 @@ export class S3Client {
     return getSignedUrl(this.s3, command, {
       expiresIn: this.PDF_URL_EXPIRES_IN_SECONDS
     });
+  };
+
+  public deleteProjectFile = async (
+    docId: string,
+    relativePath: string
+  ): Promise<void> => {
+    const key = `projects/${docId}/${relativePath}`;
+
+    await this.s3.send(
+      new DeleteObjectCommand({ Bucket: this.BUCKET_NAME, Key: key })
+    );
   };
 }

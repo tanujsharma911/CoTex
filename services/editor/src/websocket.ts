@@ -260,7 +260,9 @@ class WSConnection {
   };
 
   private sendDocUpdatesTo = async (docId: string, userId: string) => {
-    const latexCode = await storage.getLatexCode(docId);
+    const latexCode = (
+      await storage.getProjectFile(docId, 'main.tex')
+    ).toString('utf-8');
 
     const user = userManager.getLocalUser(userId);
 

@@ -101,6 +101,9 @@ importers:
         specifier: ^3.1095.0
         version: 3.1095.0
     devDependencies:
+      '@cotex/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@cotex/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

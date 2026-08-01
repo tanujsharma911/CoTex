@@ -11,17 +11,6 @@ import type { UserRepository } from "../repositories/user.repository.js";
 import type WebSocket from "ws";
 import { config } from "../config/env.js";
 
-export const getLatexCode = (doc: docType) => {
-  const ydoc = new Y.Doc();
-
-  Y.applyUpdate(ydoc, new Uint8Array(doc.ydocData));
-
-  const ytext = ydoc.getText("sharedLatexCode");
-
-  const latexCode = ytext.toString();
-
-  return latexCode;
-};
 
 export const getChannelKey = (docId: string) => {
   return `${REDIS_CHANNEL_DOC}:${docId}`;

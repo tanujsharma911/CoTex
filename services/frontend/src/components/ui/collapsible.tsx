@@ -5,10 +5,15 @@ function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
 }
 
 function CollapsibleTrigger({
+  className,
   ...props
-}: CollapsiblePrimitive.Trigger.Props & { asChild }) {
+}: CollapsiblePrimitive.Trigger.Props & { className: string }) {
   return (
-    <CollapsiblePrimitive.Trigger data-slot="collapsible-trigger" {...props} />
+    <CollapsiblePrimitive.Trigger
+      className={className}
+      data-slot="collapsible-trigger"
+      {...props}
+    />
   );
 }
 

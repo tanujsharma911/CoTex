@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import * as Y from 'yjs';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -131,6 +131,45 @@ const Editor = () => {
     );
   }, [socketStore.socket]);
 
+  useEffect(() => {
+    const unSubMessageListner = socketStore.onMessage((msg: MessageEvent) => {
+      const message = JSON.parse(msg.data);
+
+      if (message.type == MessageType.EDITORS_UPDATE) {
+        setEditors(message.data);
+      } else if (message.type === MessageType.CURSOR_MOVE) {
+        setEditors((prev) => {
+          const tempUsers = [...prev];
+
+          const userIndex = tempUsers.findIndex(
+            (user) => user.userId === message.data.userId
+          );
+
+          if (userIndex === -1) {
+            console.log('Received cursor move for unknown user, ignoring');
+            return tempUsers;
+          }
+
+          tempUsers[userIndex] = {
+            ...message.data
+          };
+
+          return tempUsers;
+        });
+      } else if (message.type == MessageType.EDIT) {
+        Y.applyUpdate(
+          ydocRef.current,
+          new Uint8Array(Object.values(message.update)),
+          'remote'
+        );
+      }
+    });
+
+    return () => {
+      unSubMessageListner();
+    };
+  }, []);
+
   /* ------------------------ Updating Remote User Cursors in Monaco ------------------------ */
   useHandleUserPresence({
     editorRef,
@@ -144,7 +183,7 @@ const Editor = () => {
   }
 
   return (
-    <div className="h-screen w-screen grid grid-rows-[auto_1fr]">
+    <div className="h-screen w-screen">
       {/* Menu bar */}
       <MenuBar
         editors={editors}
@@ -154,10 +193,10 @@ const Editor = () => {
         downloadPDF={downloadPDF}
       />
 
-      <SideBar.Provider>
+      <SideBar.Provider docId={docId} className="p-1 pt-12 grid gap-1 h-screen">
         <ResizablePanelGroup
           orientation="horizontal"
-          className="max-w-screen w-full gap-1 p-2 pt-0 pl-0"
+          className="max-w-screen w-full gap-1"
         >
           <ResizablePanel defaultSize="50%">
             <div className="h-full rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700">

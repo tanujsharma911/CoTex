@@ -246,6 +246,32 @@ class BackendApi {
       throw error;
     }
   }
+
+  public async getProjectFiles({
+    token,
+    docId
+  }: {
+    token?: string;
+    docId: string;
+  }) {
+    try {
+      const response = await this.axiosInstance.get(
+        `/docs/${docId}/project-files`,
+        {
+          params: {
+            token: token
+          }
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        'Get project files error:',
+        error.response?.data?.message || error.message
+      );
+      throw error;
+    }
+  }
 }
 
 const backendApi = new BackendApi();

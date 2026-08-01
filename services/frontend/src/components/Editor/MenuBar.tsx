@@ -19,7 +19,7 @@ const MenuBar = (props: MenuBarProps) => {
   const { editors, docData, compileCode, downloadPDF, fetchDocData } = props;
 
   return (
-    <section className="h-12 px-4 pb-0 grid grid-cols-3 items-center">
+    <div className="absolute left-0 top-0 right-0 z-10 h-12 px-4 pb-0 grid grid-cols-3 items-center">
       <div className="flex items-center gap-2">
         <Link to={'/'} className="hover:bg-accent p-1.5 rounded-lg">
           <Home size={18} />
@@ -87,7 +87,7 @@ const MenuBar = (props: MenuBarProps) => {
           </DialogContent>
         </Dialog>
       </div>
-    </section>
+    </div>
   );
 };
 

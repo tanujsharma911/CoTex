@@ -1,110 +1,108 @@
-import { ChevronRightIcon, File, FileIcon, FolderIcon } from 'lucide-react';
+import {
+  ChevronRightIcon,
+  File,
+  FileIcon,
+  FolderIcon,
+  RefreshCcw
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger
 } from '../ui/collapsible';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { backendApi } from '@/services/backendApi';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useMutation } from '@tanstack/react-query';
 
-type FileTreeItem = { name: string } | { name: string; items: FileTreeItem[] };
+const Files = ({ docId }: { docId: string }) => {
+  const [fileTree, setFileTree] = useState<string[]>([]);
+  const { token } = useAuthStore();
 
-const Files = () => {
-  const fileTree: FileTreeItem[] = [
-    {
-      name: 'components',
-      items: [
-        {
-          name: 'ui',
-          items: [
-            { name: 'button.tsx' },
-            { name: 'card.tsx' },
-            { name: 'dialog.tsx' },
-            { name: 'input.tsx' },
-            { name: 'select.tsx' },
-            { name: 'table.tsx' }
-          ]
-        },
-        { name: 'login-form.tsx' },
-        { name: 'register-form.tsx' }
-      ]
-    },
-    {
-      name: 'lib',
-      items: [{ name: 'utils.ts' }, { name: 'cn.ts' }, { name: 'api.ts' }]
-    },
-    {
-      name: 'hooks',
-      items: [
-        { name: 'use-media-query.ts' },
-        { name: 'use-debounce.ts' },
-        { name: 'use-local-storage.ts' }
-      ]
-    },
-    {
-      name: 'types',
-      items: [{ name: 'index.d.ts' }, { name: 'api.d.ts' }]
-    },
-    {
-      name: 'public',
-      items: [{ name: 'favicon.ico' }, { name: 'logo.svg' }, { name: 'images' }]
-    },
-    { name: 'app.tsx' },
-    { name: 'layout.tsx' },
-    { name: 'globals.css' },
-    { name: 'package.json' },
-    { name: 'tsconfig.json' },
-    { name: 'README.md' },
-    { name: '.gitignore' }
-  ];
-  const renderItem = (fileItem: FileTreeItem) => {
-    if ('items' in fileItem) {
+  const renderItem = (fileItem: string) => {
+    const files = fileItem.split('/').filter(Boolean);
+    console.log(files);
+
+    if (files.length == 1) {
       return (
-        <Collapsible key={fileItem.name}>
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="group w-full justify-start transition-none hover:bg-accent hover:text-accent-foreground"
-            >
-              <ChevronRightIcon className="transition-transform group-data-[state=open]:rotate-90" />
-              <FolderIcon />
-              {fileItem.name}
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-1 ml-5 style-lyra:ml-4">
-            <div className="flex flex-col gap-1">
-              {fileItem.items.map((child) => renderItem(child))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <Button
+          key={files[0]}
+          variant="link"
+          size="sm"
+          className="w-full justify-start gap-2 text-foreground"
+        >
+          <FileIcon />
+          <span>{files[0]}</span>
+        </Button>
       );
     }
     return (
-      <Button
-        key={fileItem.name}
-        variant="link"
-        size="sm"
-        className="w-full justify-start gap-2 text-foreground"
-      >
-        <FileIcon />
-        <span>{fileItem.name}</span>
-      </Button>
+      <Collapsible key={files[0]}>
+        <CollapsibleTrigger
+          className={
+            'group w-full flex items-center gap-1 transition-none text-sm hover:bg-accent hover:text-accent-foreground'
+          }
+        >
+          <ChevronRightIcon
+            size={16}
+            className="transition-transform group-data-[state=open]:rotate-90"
+          />
+          <FolderIcon size={16} />
+          {files[0]}
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-1 ml-5 style-lyra:ml-4">
+          <div className="flex flex-col gap-1">
+            {files.slice(1).map((child) => renderItem(child))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     );
   };
 
+  const getFileTree = useMutation({
+    mutationFn: async () => {
+      const response = await backendApi.getProjectFiles({ docId, token });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setFileTree(data);
+    },
+    onError: (error) => {
+      console.error('Get File Tree ::', error);
+      //TODO: Proper error handling
+    }
+  });
+
+  useEffect(() => {
+    getFileTree.mutate();
+  }, []);
+
   return (
-    <div className="flex flex-col gap-1 border rounded-lg mr-2">
-      Files
-      {fileTree.map((item) => renderItem(item))}
+    <div className="flex flex-col gap-1">
+      <div className="flex justify-end px-2">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="rounded-lg"
+          onClick={async () => {
+            getFileTree.mutate();
+          }}
+        >
+          <RefreshCcw size={14} />
+        </Button>
+      </div>
+      {fileTree
+        .sort((a, b) => b.length - a.length)
+        .map((item) => renderItem(item))}
     </div>
   );
 };
 
-const SideBar = ({ setActiveTab }) => {
+const Triggers = ({ setActiveTab }) => {
   return (
-    <div className="flex flex-col items-center gap-2 pt-2">
+    <div className="flex flex-col w-12 items-center gap-2 pt-2">
       <Button
         variant="ghost"
         size="icon-lg"
@@ -118,25 +116,29 @@ const SideBar = ({ setActiveTab }) => {
   );
 };
 
-const Provider = ({ children }) => {
+const Provider = ({ children, className, docId }) => {
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
 
   return (
     <div
       className={cn(
-        'grid h-[calc(100vh-48px)]',
-        activeTab != undefined
-          ? 'grid-cols-[46px_200px_1fr]'
-          : 'grid-cols-[46px_1fr]'
+        className,
+        activeTab ? 'grid-cols-[auto_auto_1fr]' : 'grid-cols-[auto_1fr]'
       )}
     >
-      <SideBar setActiveTab={setActiveTab} />
-      {activeTab === 'files' && <Files />}
+      <Triggers setActiveTab={setActiveTab} />
+      {activeTab && (
+        <div className="w-48 p-1 border rounded-lg mr-2">
+          {activeTab === 'files' && <Files docId={docId} />}
+        </div>
+      )}
       {children}
     </div>
   );
 };
 
-SideBar.Provider = Provider;
+const SideBar = {
+  Provider
+};
 
 export default SideBar;

@@ -86,3 +86,7 @@ export interface ThemeStore {
   toggle: () => 'dark' | 'light';
   init: () => void;
 }
+
+export type FileTreeItem =
+  | { name: string }
+  | { name: string; items: FileTreeItem[] };

@@ -3,7 +3,7 @@ import debounce, { type DebouncedFunction } from 'debounce';
 
 import { storage } from './storage.js';
 import { DocsRepository } from './repositories/docs.repository.js';
-import { YDOC_MAIN_LATEX } from '@cotex/constants';
+import { ContentType, YDOC_MAIN_LATEX } from '@cotex/constants';
 
 class DocManager {
   private docId_doc: Map<string, Y.Doc> = new Map(); // docId -> Y.Doc
@@ -20,7 +20,9 @@ class DocManager {
       ydoc = new Y.Doc();
 
       try {
-        const latexCode = await storage.getLatexCode(docId);
+        const latexCode = (
+          await storage.getProjectFile(docId, 'main.tex')
+        ).toString('utf-8');
 
         if (latexCode) {
           ydoc.getText(YDOC_MAIN_LATEX).insert(0, latexCode);
@@ -54,7 +56,7 @@ class DocManager {
       if (ydoc) {
         const latexContent = ydoc.getText(YDOC_MAIN_LATEX).toString();
         await storage
-          .saveLatexCode(docId, latexContent)
+          .saveProjectFile(docId, 'main.tex', latexContent, ContentType.LATEX)
           .catch((err) =>
             console.error(`Failed final persist for ${docId}:`, err)
           );
@@ -98,7 +100,12 @@ class DocManager {
         const latexContent = ydoc.getText(YDOC_MAIN_LATEX).toString();
 
         try {
-          await storage.saveLatexCode(docId, latexContent);
+          await storage.saveProjectFile(
+            docId,
+            'main.tex',
+            latexContent,
+            ContentType.LATEX
+          );
         } catch (err) {
           console.error(`Failed to persist doc ${docId}:`, err);
         }

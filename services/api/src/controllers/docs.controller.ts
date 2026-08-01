@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { exec } from 'child_process';
-import * as Y from 'yjs';
+import { ContentType } from '@cotex/constants';
 
 import { getCompileDir } from '../utils/utils.js';
 import { lockManager } from '../LockManager.js';
@@ -100,9 +100,11 @@ class DocsController {
         return;
       }
 
-      await storage.saveLatexCode(
+      await storage.saveProjectFile(
         newDoc._id.toString(),
-        DEFAULT_LATEX_TEMPLATE
+        'main.tex',
+        DEFAULT_LATEX_TEMPLATE,
+        ContentType.LATEX
       );
 
       res.status(201).json({
@@ -250,7 +252,9 @@ class DocsController {
         return;
       }
 
-      const latexCode = await storage.getLatexCode(docId);
+      const latexCode = (
+        await storage.getProjectFile(docId, 'main.tex')
+      ).toString('utf-8');
 
       if (!latexCode) {
         return res.status(400).json({
@@ -290,7 +294,12 @@ class DocsController {
       }
 
       const pdfBuffer = await fs.readFile(pdfPath);
-      const pdfKey = await storage.saveCompiledPdf(docId, pdfBuffer);
+      const pdfKey = await storage.saveProjectFile(
+        docId,
+        'output/main.pdf',
+        pdfBuffer,
+        ContentType.PDF
+      );
 
       const pdfUrl = await storage.getPresignedDownloadUrl(pdfKey);
 
@@ -308,6 +317,49 @@ class DocsController {
       });
     } finally {
       lock.release();
+    }
+  };
+
+  public getProjectFiles = async (req: Request, res: Response) => {
+    try {
+      const { docId } = req.params ?? {};
+
+      if (!docId || typeof docId !== 'string') {
+        res.status(400).json({
+          message: 'Document ID is required and must be a string'
+        });
+        return;
+      }
+
+      const doc = await this.docsRepository.getDoc(docId);
+
+      if (!doc) {
+        res.status(404).json({ message: 'Document not found' });
+        return;
+      }
+
+      const isUserAuthorized = doc.ownerId === req.user.userId;
+
+      if (!isUserAuthorized) {
+        res.status(403).json({
+          message:
+            'Forbidden: You do not have permission to access this document'
+        });
+        return;
+      }
+
+      const files = await storage.listProjectFiles(docId);
+
+      res.status(200).json({
+        message: 'Project files retrieved successfully',
+        data: files
+      });
+    } catch (error) {
+      console.log(error instanceof Error ? error.message : 'Unknown error');
+
+      res.status(500).json({
+        message: 'An error occurred while retrieving project files'
+      });
     }
   };
 }
