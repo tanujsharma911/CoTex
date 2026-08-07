@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      port: Number(env.VITE_SERVER_PORT) || 5173
+      port: Number(env.VITE_FRONTEND_PORT) || 5173
     }
   };
 });

@@ -1,5 +1,4 @@
 import {
-  PutObjectCommand,
   GetObjectCommand,
   S3Client as S3ClientSdk,
   ListObjectsV2Command,
@@ -7,11 +6,13 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './client.js';
+import { Upload } from '@aws-sdk/lib-storage';
 import { ContentType } from '@cotex/constants';
 
-export class S3Client {
+export class S3 {
   private readonly PDF_URL_EXPIRES_IN_SECONDS = 300;
   private s3: S3ClientSdk;
+  private s3Public: S3ClientSdk;
   private readonly BUCKET_NAME: string;
 
   constructor(args: {
@@ -19,9 +20,11 @@ export class S3Client {
     secretAccessKey: string;
     region?: string;
     endpoint: string;
+    publicEndpoint: string;
     bucketName: string;
   }) {
     this.s3 = s3Client(args);
+    this.s3Public = s3Client({ ...args, endpoint: args.publicEndpoint });
     this.BUCKET_NAME = args.bucketName;
   }
 
@@ -33,14 +36,17 @@ export class S3Client {
   ) => {
     const key = `projects/${docId}/${relativePath}`;
 
-    await this.s3.send(
-      new PutObjectCommand({
+    const upload = new Upload({
+      client: this.s3,
+      params: {
         Bucket: this.BUCKET_NAME,
         Key: key,
         Body: content,
         ContentType: contentType
-      })
-    );
+      }
+    });
+
+    await upload.done();
 
     return key;
   };
@@ -77,7 +83,7 @@ export class S3Client {
       Key: key
     });
 
-    return getSignedUrl(this.s3, command, {
+    return getSignedUrl(this.s3Public, command, {
       expiresIn: this.PDF_URL_EXPIRES_IN_SECONDS
     });
   };

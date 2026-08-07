@@ -9,6 +9,7 @@ export const config = {
   MONGODB_URL: process.env.MONGODB_URL,
 
   MINIO_URL: process.env.MINIO_URL || 'http://localhost:9000',
+  MINIO_PUBLIC_URL: process.env.MINIO_PUBLIC_URL || 'http://localhost:9000',
   MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY || 'cotex',
   MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY || 'password',
   MINIO_BUCKET: process.env.MINIO_BUCKET || 'cotex'

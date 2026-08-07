@@ -46,7 +46,7 @@ export function useEstablishConnection(
       .getDoc({ token, docId })
       .then((res) => {
         if (cancelled) return;
-        setDocData(res.data[0]);
+        setDocData?.(res.data[0]);
         setEditorStatus('connecting');
 
         socketStore.connect({
@@ -63,22 +63,20 @@ export function useEstablishConnection(
         setEditorStatus('error');
       });
 
-    const unsubConnect = socketStore.onConnect(() => {
-      setEditorStatus('syncing');
-
-      const stateVector = Y.encodeStateVector(ydocRef.current!);
-
-      socketStore.send({
-        type: MessageType.SYNC_STEP1,
-        docId,
-        stateVector: Array.from(stateVector)
-      });
-    });
-
     const unsubMessage = socketStore.onMessage((msg: MessageEvent) => {
       const message = JSON.parse(msg.data);
 
-      if (message.type === MessageType.SYNC_STEP2) {
+      if (message.type === MessageType.CONNECTION_READY) {
+        setEditorStatus('syncing');
+
+        const stateVector = Y.encodeStateVector(ydocRef.current!);
+
+        socketStore.send({
+          type: MessageType.SYNC_STEP1,
+          docId,
+          stateVector: Array.from(stateVector)
+        });
+      } else if (message.type === MessageType.SYNC_STEP2) {
         Y.applyUpdate(
           ydocRef.current!,
           new Uint8Array(message.update),
@@ -91,7 +89,6 @@ export function useEstablishConnection(
     return () => {
       cancelled = true;
       socketStore.disconnect();
-      unsubConnect();
       unsubMessage();
     };
   }, [docId, token]);

@@ -1,5 +1,5 @@
 import { User } from "../models/user.model.js";
-import type { UserType } from "@cotex/shared-types";
+import type { UserType } from "@cotex/types";
 
 class UserRepository {
   public async createUser({

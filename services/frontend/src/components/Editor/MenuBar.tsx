@@ -19,8 +19,8 @@ const MenuBar = (props: MenuBarProps) => {
   const { editors, docData, compileCode, downloadPDF, fetchDocData } = props;
 
   return (
-    <div className="absolute left-0 top-0 right-0 z-10 h-12 px-4 pb-0 grid grid-cols-3 items-center">
-      <div className="flex items-center gap-2">
+    <div className="absolute left-0 top-0 right-0 z-10 h-12 px-3 pb-0 grid grid-cols-3 items-center">
+      <div className="flex items-center gap-3">
         <Link to={'/'} className="hover:bg-accent p-1.5 rounded-lg">
           <Home size={18} />
         </Link>
@@ -68,21 +68,22 @@ const MenuBar = (props: MenuBarProps) => {
                 Share this document with others by sending them the link. They
                 will be able to edit the document in real-time. But make sure
                 visibility is set to public.
-                <p className="mt-5">Share Link</p>
-                <div className="grid grid-cols-[auto_1fr] gap-2 mt-2 items-center">
-                  <code className="relative rounded overflow-scroll scroll bg-muted px-[0.3rem] font-mono text-base h-fit font-semibold">
-                    {window.location.href}
-                  </code>
-                  <Button
-                    variant={'outline'}
-                    onClick={() =>
-                      navigator.clipboard.writeText(window.location.href)
-                    }
-                  >
-                    <Copy />
-                  </Button>
-                </div>
               </DialogDescription>
+              <p className="mt-5">Share Link</p>
+              <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
+                <code className="relative rounded overflow-scroll scroll bg-muted px-[0.3rem] font-mono text-sm h-fit font-medium">
+                  {window.location.href}
+                </code>
+                <Button
+                  variant={'outline'}
+                  size={'icon-sm'}
+                  onClick={() =>
+                    navigator.clipboard.writeText(window.location.href)
+                  }
+                >
+                  <Copy />
+                </Button>
+              </div>
             </DialogHeader>
           </DialogContent>
         </Dialog>

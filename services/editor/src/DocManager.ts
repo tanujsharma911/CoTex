@@ -3,15 +3,17 @@ import debounce, { type DebouncedFunction } from 'debounce';
 
 import { storage } from './storage.js';
 import { DocsRepository } from './repositories/docs.repository.js';
-import { ContentType, YDOC_MAIN_LATEX } from '@cotex/constants';
+import {
+  ContentType,
+  DEBOUNCE_PERSIST_TIME,
+  YDOC_MAIN_LATEX
+} from '@cotex/constants';
 
 class DocManager {
   private docId_doc: Map<string, Y.Doc> = new Map(); // docId -> Y.Doc
   private docId_users: Map<string, Set<string>> = new Map(); // docId -> Set of user IDs
   private persistTimers: Map<string, DebouncedFunction<() => Promise<void>>> =
     new Map();
-
-  private docsRepository = new DocsRepository();
 
   public getOrCreateDoc = async (docId: string) => {
     let ydoc = this.docId_doc.get(docId);
@@ -109,7 +111,7 @@ class DocManager {
         } catch (err) {
           console.error(`Failed to persist doc ${docId}:`, err);
         }
-      }, 10000); // 10 second debounce
+      }, DEBOUNCE_PERSIST_TIME); // 10 second debounce
 
       this.persistTimers.set(docId, debouncedPersist);
     }

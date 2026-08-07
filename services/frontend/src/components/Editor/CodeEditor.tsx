@@ -94,7 +94,8 @@ export function CodeEditor({
       theme={`vs-${theme}`}
       onMount={handleOnMount}
       options={{
-        renderValidationDecorations: 'off'
+        renderValidationDecorations: 'off',
+        minimap: { enabled: false }
       }}
     />
   );

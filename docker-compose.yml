@@ -3,13 +3,14 @@ name: "CoTex"
 services:
   frontend:
     build:
-      context: ./services/frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/frontend/Dockerfile
       args:
-        VITE_BACKEND_URL: ${BACKEND_URL}
+        VITE_EDITOR_URL: ${VITE_EDITOR_URL}
+        VITE_API_URL: ${VITE_API_URL}
     container_name: cotex-frontend
     ports:
-      - "${FRONTEND_PORT}:80"
+      - "${VITE_FRONTEND_PORT}:80"
 
   mongodb:
     image: mongo:6.0
@@ -24,17 +25,56 @@ services:
     image: redis:7-alpine
     container_name: cotex-redis
     ports:
-      - "${REDIS_PORT}:6379"
+      - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
     restart: unless-stopped
 
+  minio:
+    image: quay.io/minio/aistor/minio
+    container_name: cotex-minio
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - minio_data:/data
+      - ${HOME}/minio/minio.license:/minio.license
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: >
+      server /data
+      --console-address ":9001"
+      --license /minio.license
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Initialize MinIO with a user and bucket
+  minio-init:
+    image: minio/mc
+    container_name: cotex-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+      (mc admin user add local ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} || true) &&
+      mc admin policy attach local readwrite --user ${MINIO_ACCESS_KEY} &&
+      mc mb --ignore-existing local/${MINIO_BUCKET}
+      "
+    restart: "no"
+
   # Load Balancer for API Service
-  cotex-lb:
+  load-balancer:
     build:
-      context: ./services/load-balancer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/load-balancer/Dockerfile
     container_name: cotex-lb
     ports:
       - "${LOAD_BALANCER_PORT}:80"
@@ -45,24 +85,49 @@ services:
 
   api-service:
     build:
-      context: ./services/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/api/Dockerfile
+    environment:
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      API_PORT: ${API_PORT}
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      TOKEN_EXPIRY: ${TOKEN_EXPIRY}
+      MONGODB_URL: ${MONGODB_URL}
+      MINIO_URL: ${MINIO_URL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       - redis
       - mongodb
     restart: unless-stopped
-    replicas: 2
+    deploy:
+      replicas: 2
 
   editor-service:
     build:
-      context: ./services/editor
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/editor/Dockerfile
+    environment:
+      EDITOR_PORT: ${EDITOR_PORT}
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      TOKEN_EXPIRY: ${TOKEN_EXPIRY}
+      MONGODB_URL: ${MONGODB_URL}
+      REDIS_URL: ${REDIS_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      MINIO_URL: ${MINIO_URL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
     depends_on:
       - redis
       - mongodb
     restart: unless-stopped
-    replicas: 2
+    deploy:
+      replicas: 2
 
 volumes:
   redis_data:
   mongodb_data:
+  minio_data:

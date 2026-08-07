@@ -17,7 +17,7 @@ export type EditorStatus =
 
 export interface MenuBarProps {
   editors: editingUser[];
-  docData: docType;
+  docData: docType | undefined;
   fetchDocData: UseMutationResult<any, any, void, unknown>;
   compileCode: UseMutationResult<any, any, void, unknown>;
   downloadPDF: UseMutationResult<any, any, void, unknown>;

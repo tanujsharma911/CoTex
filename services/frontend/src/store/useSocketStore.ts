@@ -15,41 +15,46 @@ const handleConnect = ({
   messageListeners: Set<(event: MessageEvent) => void>;
   connectListeners: Set<() => void>;
 }) => {
-  const state = get();
+  try {
+    const state = get();
 
-  if (
-    state.socket &&
-    (state.socket.readyState === WebSocket.OPEN ||
-      state.socket.readyState === WebSocket.CONNECTING)
-  ) {
-    return state.socket;
-  }
+    if (
+      state.socket &&
+      (state.socket.readyState === WebSocket.OPEN ||
+        state.socket.readyState === WebSocket.CONNECTING)
+    ) {
+      return state.socket;
+    }
 
-  const ws = new WebSocket(`${url}?token=${token}&docId=${docId}`);
+    const ws = new WebSocket(`${url}?token=${token}&docId=${docId}`);
 
-  set({ socket: ws });
+    set({ socket: ws });
 
-  ws.onopen = () => {
-    console.log('useWebSocket :: connection established');
-    set({ isConnected: true });
-    connectListeners.forEach((listener) => listener());
-  };
+    ws.onopen = () => {
+      console.log('useWebSocket :: connection established');
+      set({ isConnected: true });
+      connectListeners.forEach((listener) => listener());
+    };
 
-  ws.addEventListener('message', (event) => {
-    messageListeners.forEach((listener) => listener(event));
-  });
+    ws.addEventListener('message', (event) => {
+      messageListeners.forEach((listener) => listener(event));
+    });
 
-  ws.onclose = () => {
-    console.log('useWebSocket :: connection closed');
-    set({ isConnected: false });
-  };
+    ws.onclose = () => {
+      console.log('useWebSocket :: connection closed');
+      set({ isConnected: false });
+    };
 
-  ws.onerror = (error) => {
+    ws.onerror = (error) => {
+      console.error('useWebSocket :: connection error', error);
+      set({ isConnected: false });
+    };
+
+    return ws;
+  } catch (error) {
     console.error('useWebSocket :: connection error', error);
-    set({ isConnected: false });
-  };
-
-  return ws;
+    throw error;
+  }
 };
 
 const handleDisconnect = ({
@@ -85,7 +90,16 @@ export const useSocketStore = create<SocketStore>((set, get) => {
         connectListeners
       }),
 
-    send: (message) => get().socket?.send(JSON.stringify(message)),
+    send: (message): boolean => {
+      if (!get().socket || get()?.socket?.readyState !== WebSocket.OPEN) {
+        console.error(
+          'useWebSocket :: cannot send message, socket is not open'
+        );
+        return false;
+      }
+      get().socket?.send(JSON.stringify(message));
+      return true;
+    },
 
     onMessage: (callback: (event: MessageEvent) => void) => {
       messageListeners.add(callback);

@@ -54,24 +54,27 @@ PDFs (Compiled):
 ### 3. Real-Time Collaboration Flow
 
 ```
-User A                WebSocket Server           User B
-  │                          │                      │
-  ├─ SYNC_STEP1 (State Vector) ►│                      │
-  │◄──── SYNC_STEP2 (Diff update) ───┤                      │
-  │                          │                      │
-  │                          │◄───── Connect (State Vector) ──┤
-  │                          ├─ Sends Doc(LaTeX) ──►│
-  │                          │                      │
-  ├─ Edit Document ─────────►│                      │
-  │  (YJS update)            │                      │
-  │                          ├──── Broadcast ──────►│
-  │                          │   (YJS update)       │
-  │                          │                      │
-  │◄─────── Broadcast ───────┤◄──── Edit ───────────┤
-  │                          │                      │
-  │                          ▼                      │
-  │                     Update DB                   │
-  │                  (with debounce)                │
+┌────────┐                    ┌───────────────────┐                    ┌────────┐
+│ User A │                    │ WebSocket Server  │                    │ User B │
+└───┬────┘                    └─────────┬─────────┘                    └───┬────┘
+    │                                   │                                   │
+    │──── SYNC_STEP1 (State Vector) ───►│                                   │
+    │◄──── SYNC_STEP2 (Diff update) ────│                                   │
+    │                                   │                                   │
+    │                                   │◄──── Connect (State Vector) ──────│
+    │                                   │──────── Sends Doc(LaTeX) ────────►│
+    │                                   │                                   │
+    │──── Edit Document ───────────────►│                                   │
+    │     (YJS update)                  │                                   │
+    │                                   │──────── Broadcast ───────────────►│
+    │                                   │        (YJS update)               │
+    │                                   │                                   │
+    │◄────────── Broadcast ─────────────│◄──────────── Edit Document ───────│
+    │                                   │                                   │
+    │                                   ▼                                   │
+    │                              Update DB                                │
+    │                           (with debounce)                             │
+    │                                   │                                   │
 ```
 
 ### MinIO/S3 (Object Storage future implementation)

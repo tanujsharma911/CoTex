@@ -27,10 +27,6 @@ class BackendApi {
 
       return response.data;
     } catch (error: any) {
-      console.error(
-        'Login error:',
-        error.response?.data?.message || error.message
-      );
       throw error;
     }
   }
@@ -49,10 +45,6 @@ class BackendApi {
 
       return response.data;
     } catch (error: any) {
-      console.error(
-        'Registration error:',
-        error.response?.data?.message || error.message
-      );
       throw error;
     }
   }

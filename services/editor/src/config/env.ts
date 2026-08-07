@@ -7,14 +7,13 @@ export const config = {
   TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '1d', // Token expiry time
   MONGODB_URL: process.env.MONGODB_URL,
 
-  REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379'),
-  REDIS_HOST: process.env.REDIS_HOST || 'localhost',
+  REDIS_URL: process.env.REDIS_URL || 'localhost:6379',
 
   CORS_ORIGINS: process.env.CORS_ORIGINS || 'http://localhost:5173',
 
   MINIO_URL: process.env.MINIO_URL || 'http://localhost:9000',
+  MINIO_PUBLIC_URL: process.env.MINIO_PUBLIC_URL || 'http://localhost:9000',
   MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY || 'cotex',
   MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY || 'password',
   MINIO_BUCKET: process.env.MINIO_BUCKET || 'cotex'
 };
-

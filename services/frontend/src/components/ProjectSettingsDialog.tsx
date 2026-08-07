@@ -18,12 +18,12 @@ import {
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { useEffect, useState } from 'react';
-import type { docType } from '@/types';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { backendApi } from '@/services/backendApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 import type { UseMutationResult } from '@tanstack/react-query';
+import type { docType } from '@cotex/types';
 
 const ProjectSettingsDialog = ({
   docData,
@@ -50,7 +50,7 @@ const ProjectSettingsDialog = ({
     try {
       await backendApi.updateDoc({
         token,
-        docId: docData._id,
+        docId: docData._id.toString(),
         data: {
           name: projectName,
           visibility: access

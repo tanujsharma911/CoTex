@@ -5,7 +5,7 @@ import debounce from 'debounce';
 import { docManager } from './DocManager.js';
 import { userManager } from './UserManager.js';
 import { REDIS_CHANNEL_DOC } from './config/constants.js';
-import { MessageType, YDOC_MAIN_LATEX } from '@cotex/constants';
+import { MessageType } from '@cotex/constants';
 
 import { UserRepository } from './repositories/user.repository.js';
 import { DocsRepository } from './repositories/docs.repository.js';
@@ -19,10 +19,31 @@ import { storage } from './storage.js';
 
 const SERVER_ID = randomUUID();
 
+const toMessageText = (data: unknown): string | null => {
+  if (typeof data === 'string') {
+    return data;
+  }
+
+  if (data instanceof Buffer) {
+    return data.toString('utf-8');
+  }
+
+  if (data instanceof ArrayBuffer) {
+    return Buffer.from(data).toString('utf-8');
+  }
+
+  if (ArrayBuffer.isView(data)) {
+    return Buffer.from(data.buffer, data.byteOffset, data.byteLength).toString(
+      'utf-8'
+    );
+  }
+
+  return null;
+};
+
 class WSConnection {
   readonly userRepository: UserRepository = new UserRepository();
   readonly docRepository: DocsRepository = new DocsRepository();
-  // private dbUpdateTimers = new Map<string, Function>();
 
   constructor() {
     this.initRedisSubscriber();
@@ -125,6 +146,8 @@ class WSConnection {
       ws.onmessage = (event) =>
         this.handleMessages(event, docId, userId, userData);
 
+      ws.send(JSON.stringify({ type: MessageType.CONNECTION_READY }));
+
       // Send doc content to new joinee
       await this.sendDocUpdatesTo(docId, userId);
 
@@ -139,7 +162,7 @@ class WSConnection {
   };
 
   public handleMessages = async (
-    event: MessageEvent,
+    event: { data: unknown },
     docId: string,
     userId: string,
     userData: {
@@ -147,12 +170,14 @@ class WSConnection {
       email: string;
     }
   ) => {
-    if (typeof event.data !== 'string') {
+    const messageText = toMessageText(event.data);
+
+    if (!messageText) {
       return;
     }
 
     try {
-      let message = JSON.parse(event.data);
+      let message = JSON.parse(messageText);
       const doc = await docManager.getOrCreateDoc(docId);
 
       if (!message.type) {
@@ -161,7 +186,7 @@ class WSConnection {
 
       const CHANNEL = getChannelKey(docId);
 
-      // console.log('Received message:', message.type);
+      console.log('Received message:', message.type);
 
       switch (message.type) {
         case MessageType.EDIT:

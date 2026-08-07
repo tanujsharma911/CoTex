@@ -22,3 +22,11 @@
   left: -4px;
   top: -5px;
 }
+
+.monaco-editor .find-widget {
+  right: 100px !important;
+}
+
+.monaco-editor .find-widget .monaco-action-bar .action-item {
+  position: relative;
+}

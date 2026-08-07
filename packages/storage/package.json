@@ -3,17 +3,28 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1095.0",
-    "@aws-sdk/s3-request-presigner": "^3.1095.0"
+    "@aws-sdk/lib-storage": "^3.1103.0",
+    "@aws-sdk/s3-request-presigner": "^3.1095.0",
+    "typescript": "^7.0.2"
   },
   "devDependencies": {
-    "@cotex/eslint-config": "workspace:*",
     "@cotex/constants": "workspace:*",
+    "@cotex/eslint-config": "workspace:*",
     "@cotex/typescript-config": "workspace:*",
-    "@types/node": "^24.13.3"
+    "@types/node": "^24.13.3",
+    "tsx": "^4.23.1"
   }
 }

@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { PenLine, PenOff, Save } from "lucide-react";
 import { Input } from "../ui/input";
-import type { docType } from "@/types";
 import { toast } from "sonner";
 import { backendApi } from "@/services/backendApi";
 import { useAuthStore } from "@/store/useAuthStore";
+import type { docType } from "@cotex/types";
 
 const ProjectTitle = ({
   docId,

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { Button as ButtonPrimitive } from '@base-ui/react/button';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';

@@ -11,15 +11,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger
 } from '../ui/collapsible';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { backendApi } from '@/services/backendApi';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useMutation } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-const Files = ({ docId }: { docId: string }) => {
-  const [fileTree, setFileTree] = useState<string[]>([]);
+const Files = ({ docId }: { docId?: string }) => {
   const { token } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const renderItem = (fileItem: string) => {
     const files = fileItem.split('/').filter(Boolean);
@@ -61,62 +61,51 @@ const Files = ({ docId }: { docId: string }) => {
     );
   };
 
-  const getFileTree = useMutation({
-    mutationFn: async () => {
+  const fileTree = useQuery({
+    queryKey: ['file_tree'],
+    queryFn: async () => {
+      if (!docId) throw new Error('docId is required to fetch file tree');
+
       const response = await backendApi.getProjectFiles({ docId, token });
       return response.data;
-    },
-    onSuccess: (data) => {
-      setFileTree(data);
-    },
-    onError: (error) => {
-      console.error('Get File Tree ::', error);
-      //TODO: Proper error handling
     }
   });
 
-  useEffect(() => {
-    getFileTree.mutate();
-  }, []);
-
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex justify-end px-2">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="rounded-lg"
-          onClick={async () => {
-            getFileTree.mutate();
-          }}
-        >
-          <RefreshCcw size={14} />
-        </Button>
+    <div className="flex flex-col justify-between h-full">
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-end p-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-lg"
+            onClick={async () => {
+              queryClient.invalidateQueries({ queryKey: ['file_tree'] });
+            }}
+          >
+            <RefreshCcw size={14} />
+          </Button>
+        </div>
+        {fileTree.data
+          ?.sort((a: string, b: string) => b.length - a.length)
+          .map((item: string) => renderItem(item))}
       </div>
-      {fileTree
-        .sort((a, b) => b.length - a.length)
-        .map((item) => renderItem(item))}
+      <div className="bg-amber-400/20 text-amber-950 text-xs p-1 motion-translate-y-out-100 motion-delay-5000">
+        Note: Some of the feature of files are under development
+      </div>
     </div>
   );
 };
 
-const Triggers = ({ setActiveTab }) => {
-  return (
-    <div className="flex flex-col w-12 items-center gap-2 pt-2">
-      <Button
-        variant="ghost"
-        size="icon-lg"
-        onClick={() =>
-          setActiveTab((prev) => (prev !== 'files' ? 'files' : undefined))
-        }
-      >
-        <File />
-      </Button>
-    </div>
-  );
-};
-
-const Provider = ({ children, className, docId }) => {
+const Provider = ({
+  children,
+  className,
+  docId
+}: {
+  children: React.ReactNode;
+  className: string;
+  docId?: string;
+}) => {
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
 
   return (
@@ -126,9 +115,19 @@ const Provider = ({ children, className, docId }) => {
         activeTab ? 'grid-cols-[auto_auto_1fr]' : 'grid-cols-[auto_1fr]'
       )}
     >
-      <Triggers setActiveTab={setActiveTab} />
+      <div className="flex flex-col w-12 items-center gap-2 pt-2">
+        <Button
+          variant={activeTab === 'files' ? 'secondary' : 'ghost'}
+          size="icon-lg"
+          onClick={() =>
+            setActiveTab((prev) => (prev !== 'files' ? 'files' : undefined))
+          }
+        >
+          <File />
+        </Button>
+      </div>
       {activeTab && (
-        <div className="w-48 p-1 border rounded-lg mr-2">
+        <div className="w-48 border rounded-lg mr-2 overflow-hidden">
           {activeTab === 'files' && <Files docId={docId} />}
         </div>
       )}

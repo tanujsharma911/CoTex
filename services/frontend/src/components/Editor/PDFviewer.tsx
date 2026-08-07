@@ -6,7 +6,6 @@ import { MinusIcon, PlusIcon } from 'lucide-react';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { Button } from '../ui/button';
-import type { docType } from '@cotex/types';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 

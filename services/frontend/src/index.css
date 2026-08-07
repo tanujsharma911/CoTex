@@ -1,9 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@fontsource-variable/geist";
-@import 'tw-animate-css';
 
 @import "./styles/globals.css";
 @import "./styles/fonts.css";
 @import "shadcn/tailwind.css";
+
+@plugin "tailwindcss-motion";
 

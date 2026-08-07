@@ -1,19 +1,19 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 
-import axios from "axios";
+import axios from 'axios';
 
-import { backendApi } from "@/services/backendApi";
-import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
-import { validateEmail, validatePassword } from "@/lib/validation";
+import { backendApi } from '@/services/backendApi';
+import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/useAuthStore';
+import { validateEmail, validatePassword } from '@/lib/validation';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -29,14 +29,14 @@ const Login = () => {
     // Validate email
     const emailValidation = validateEmail(trimmedEmail);
     if (!emailValidation.isValid) {
-      setEmailError(emailValidation.error || "Invalid email.");
+      setEmailError(emailValidation.error || 'Invalid email.');
       return;
     }
 
     // Validate password
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.error || "Invalid password.");
+      setPasswordError(passwordValidation.error || 'Invalid password.');
       return;
     }
 
@@ -45,17 +45,16 @@ const Login = () => {
       const response = await backendApi.login(trimmedEmail, password);
 
       login(response.data.user, response.data.token);
-      navigate("/project");
+      navigate('/project');
     } catch (err) {
-      console.log("Login error:", err);
-      setPassword("");
+      setPassword('');
       if (axios.isAxiosError(err)) {
         const message =
           (err.response?.data as { message?: string } | undefined)?.message ??
-          "Unable to log in. Please try again.";
+          'Unable to log in. Please try again.';
         setError(message);
       } else {
-        setError("Something went wrong. Please try again.");
+        setError('Something went wrong. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -73,7 +72,7 @@ const Login = () => {
         <div className="mt-6 space-y-4">
           <label className="block space-y-2">
             <span className="text-sm text-foreground">
-              Email{" "}
+              Email{' '}
               <span aria-label="required" className="text-red-500">
                 *
               </span>
@@ -91,7 +90,7 @@ const Login = () => {
               required
               aria-required="true"
               aria-invalid={!!emailError}
-              aria-describedby={emailError ? "email-error" : undefined}
+              aria-describedby={emailError ? 'email-error' : undefined}
               className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none ring-0 transition focus:border-ring focus:ring-2 focus:ring-ring/40 aria-invalid:border-red-500"
             />
             {emailError && (
@@ -108,7 +107,7 @@ const Login = () => {
 
           <label className="block space-y-2">
             <span className="text-sm text-foreground">
-              Password{" "}
+              Password{' '}
               <span aria-label="required" className="text-red-500">
                 *
               </span>
@@ -127,7 +126,7 @@ const Login = () => {
               aria-required="true"
               aria-invalid={!!passwordError}
               aria-describedby={
-                passwordError ? "password-error" : "password-requirements"
+                passwordError ? 'password-error' : 'password-requirements'
               }
               className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none ring-0 transition focus:border-ring focus:ring-2 focus:ring-ring/40 aria-invalid:border-red-500"
             />
@@ -161,12 +160,12 @@ const Login = () => {
             disabled={isSubmitting}
             onClick={handleLogin}
           >
-            {isSubmitting ? "Logging in..." : "Log in"}
+            {isSubmitting ? 'Logging in...' : 'Log in'}
           </Button>
         </div>
 
         <p className="mt-4 text-sm text-muted-foreground">
-          New here?{" "}
+          New here?{' '}
           <Link
             to="/signup"
             className="text-foreground underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"

@@ -3,14 +3,25 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
   },
   "dependencies": {
-    "mongoose": "^9.6.2"
+    "mongoose": "^9.6.2",
+    "typescript": "^7.0.2"
   },
   "devDependencies": {
     "@cotex/eslint-config": "workspace:*",
-    "@cotex/typescript-config": "workspace:*"
+    "@cotex/typescript-config": "workspace:*",
+    "tsx": "^4.23.1",
+    "@types/node": "^24.13.3"
   }
 }

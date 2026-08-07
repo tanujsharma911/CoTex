@@ -12,13 +12,15 @@
     "MINIO_BUCKET",
     "MINIO_ACCESS_KEY",
     "MINIO_SECRET_KEY",
-    "MINIO_URL"
+    "MINIO_URL",
+    "VITE_FRONTEND_PORT",
+    "TOKEN_SECRET",
+    "TOKEN_EXPIRY"
   ],
   "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
+    "build": { "outputs": ["dist/**"] },
+    "start": {
+      "persistent": true
     },
     "lint": {
       "dependsOn": ["^lint"]

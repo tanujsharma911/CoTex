@@ -14,7 +14,7 @@ import { editor } from 'monaco-editor';
 import { useAuthStore } from '@/store/useAuthStore';
 import { CodeEditor } from '../components/Editor';
 import { backendApi } from '@/services/backendApi';
-import { MessageType } from '@cotex/constants';
+import { DEBOUNCE_PERSIST_TIME, MessageType } from '@cotex/constants';
 import { useMutation } from '@tanstack/react-query';
 import { useHandleUserPresence } from '@/hooks/useHandleUserPresence';
 import MenuBar from '@/components/Editor/MenuBar';
@@ -22,28 +22,43 @@ import type { docType, editingUser } from '@cotex/types';
 import { useEstablishConnection } from '@/hooks/useEstablishConnection';
 import { useSocketStore } from '@/store/useSocketStore';
 import SideBar from '@/components/Editor/SideBar';
+import { Button } from '@/components/ui/button';
+import { Replace, Search } from 'lucide-react';
+import { downloadFile } from '@/lib/pdf';
 
 const Editor = () => {
   const { docId } = useParams();
 
-  const [docData, setDocData] = useState<docType | null>(null);
+  const [docData, setDocData] = useState<docType | undefined>(undefined);
   const [editors, setEditors] = useState<editingUser[]>([]);
+  //@ts-ignore
   const [compilationError, setCompilationError] = useState<string>('');
   const [pdfUrl, setPdfUrl] = useState<string>('');
+  const [saveStatus, setSaveStatus] = useState<string>('Saved to cloud');
 
   const { token, user: currUser } = useAuthStore();
-  const { editorStatus, connectionError, ydocRef } = useEstablishConnection(
+  const { editorStatus, ydocRef } = useEstablishConnection(
     docId,
     token,
     setDocData
   );
+
   const socketStore = useSocketStore();
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
 
+  const debouncedSaveStatus = useDebouncedCallback(
+    () => setSaveStatus('Saved to cloud'),
+    DEBOUNCE_PERSIST_TIME
+  );
+
   const compileCode = useMutation({
     mutationFn: async () => {
+      if (!docId) {
+        throw new Error('Document ID is undefined');
+      }
+
       const response = await backendApi.compileDoc({
         token,
         docId
@@ -80,6 +95,10 @@ const Editor = () => {
 
   const downloadPDF = useMutation({
     mutationFn: async () => {
+      if (!docId) {
+        throw new Error('Document ID is undefined');
+      }
+
       const response = await backendApi.compileDoc({
         token,
         docId
@@ -88,8 +107,7 @@ const Editor = () => {
       return response;
     },
     onSuccess: (data) => {
-      console.log('Download PDF ::', data);
-      // downloadFile(url, `${docData?.name || 'document'}.pdf`);
+      downloadFile(data.pdfUrl, `${docData?.name || 'document'}.pdf`);
     },
     onError: (error) => {
       console.error('Download PDF ::', error);
@@ -123,13 +141,20 @@ const Editor = () => {
           return; // Don't send server-originated updates back
         }
 
+        setSaveStatus('Saving...');
+
         console.log('⬆ Sending edit update');
-        socketStore.socket?.send(
+
+        const success = socketStore.socket?.send(
           JSON.stringify({ type: MessageType.EDIT, update })
         );
+
+        if (success) {
+          debouncedSaveStatus();
+        }
       }
     );
-  }, [socketStore.socket]);
+  }, [socketStore.socket, socketStore.isConnected]);
 
   useEffect(() => {
     const unSubMessageListner = socketStore.onMessage((msg: MessageEvent) => {
@@ -157,6 +182,8 @@ const Editor = () => {
           return tempUsers;
         });
       } else if (message.type == MessageType.EDIT) {
+        if (ydocRef.current == null) return;
+
         Y.applyUpdate(
           ydocRef.current,
           new Uint8Array(Object.values(message.update)),
@@ -199,13 +226,38 @@ const Editor = () => {
           className="max-w-screen w-full gap-1"
         >
           <ResizablePanel defaultSize="50%">
-            <div className="h-full rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700">
+            <div className="h-full rounded-lg grid grid-rows-[auto_1fr_auto] overflow-hidden border border-zinc-300 dark:border-zinc-700">
+              <div className="p-1 flex gap-1 justify-end">
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() =>
+                    editorRef.current?.getAction('actions.find')?.run()
+                  }
+                >
+                  <Search />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() =>
+                    editorRef.current
+                      ?.getAction('editor.action.startFindReplaceAction')
+                      ?.run()
+                  }
+                >
+                  <Replace />
+                </Button>
+              </div>
               <CodeEditor
                 ydocRef={ydocRef}
                 ref={editorRef}
                 monacoRef={monacoRef}
                 onCursorMove={handleWhenCursorMoves}
               />
+              <div className="z-50 text-xs py-1 px-2 text-muted-foreground">
+                {saveStatus}
+              </div>
             </div>
           </ResizablePanel>
 

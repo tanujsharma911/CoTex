@@ -27,7 +27,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { backendApi } from '@/services/backendApi';
-import { downloadFile } from '@/lib/pdf';
 import { Spinner } from '@/components/ui/spinner';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -97,8 +96,8 @@ const Projects = () => {
         docId
       });
     },
-    onSuccess: (response, docId) => {
-      const pdfBuffer = response.data.pdf.data;
+    // onSuccess: (response, docId) => {
+      // const pdfBuffer = response.data.pdf.data;
 
       // const uint8Array = new Uint8Array(pdfBuffer);
 
@@ -110,7 +109,7 @@ const Projects = () => {
       // }
 
       // downloadFile(url, `project-${docId}.pdf`);
-    }
+    // }
   });
 
   return (

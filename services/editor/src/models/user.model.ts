@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import type { UserDocument } from "@cotex/shared-types";
+import type { UserDocument } from "@cotex/types";
 import { config } from "../config/env.js";
 import { createJWT } from "@cotex/auth";
 
