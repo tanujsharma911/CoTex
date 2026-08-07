@@ -83,6 +83,12 @@ services:
       - editor-service
     restart: unless-stopped
 
+  tex-compiler:
+    build:
+      context: .
+      dockerfile: config/dockerfiles/Dockerfile.tex
+    image: tex-compiler
+
   api-service:
     build:
       context: .
@@ -99,6 +105,7 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET}
       REDIS_URL: ${REDIS_URL}
     depends_on:
+      - tex-compiler
       - redis
       - mongodb
     restart: unless-stopped
