@@ -26,9 +26,6 @@
 2. **Sync Protocol**: Client sends a State Vector. Server calculates the between server doc and client doc and sends back only the missing updates.
 3. **Awareness**: Multiple users can edit same doc. Awareness protocol shares metadata about users (eg. cursor position, name, color) to other users in real-time.
 
-> [!CAUTION]
-> Currently major code resturucturing is going on.
-
 ## Functional Requirements
 
 - Users can do CRUD operations on doc.
