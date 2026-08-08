@@ -41,14 +41,10 @@
 
 ```
 Codes (latex):
-    - In mongoDB document with doc information
-    - Because fast implementation of initial version of project
-    - Will be seperated out in future version
+    - In MinIO/S3 object storage
 
 PDFs (Compiled):
-    - In mongoDB document with doc information
-    - Currently not used any where
-    - Will be remove or seperated out in future version
+    - In MinIO/S3 object storage
 ```
 
 ### 3. Real-Time Collaboration Flow
