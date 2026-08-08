@@ -25,4 +25,4 @@ jobs:
             cd /opt/cotex
             docker compose down
             git pull
-            docker compose up -d --build
+            make run-docker
