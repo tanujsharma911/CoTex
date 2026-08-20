@@ -25,6 +25,8 @@ COPY packages/storage ./packages/storage
 COPY packages/typescript-config ./packages/typescript-config
 COPY ./services/editor ./services/editor
 
+RUN pnpm turbo build
+
 EXPOSE 3001
 
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/index.js"]

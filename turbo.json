@@ -18,7 +18,10 @@
     "TOKEN_EXPIRY"
   ],
   "tasks": {
-    "build": { "outputs": ["dist/**"] },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
     "start": {
       "persistent": true
     },

@@ -23,6 +23,8 @@ COPY packages/storage ./packages/storage
 COPY packages/typescript-config ./packages/typescript-config
 COPY ./services/api ./services/api
 
+RUN pnpm turbo build
+
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
