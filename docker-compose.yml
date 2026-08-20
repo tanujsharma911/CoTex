@@ -12,14 +12,14 @@ services:
     ports:
       - "${VITE_FRONTEND_PORT}:80"
 
-  mongodb:
-    image: mongo:6.0
-    container_name: cotex-mongodb
-    ports:
-      - "${MONGODB_PORT}:27017"
-    volumes:
-      - mongodb_data:/data/db
-    restart: unless-stopped
+  # mongodb:
+  #   image: mongo:6.0
+  #   container_name: cotex-mongodb
+  #   ports:
+  #     - "${MONGODB_PORT}:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #   restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -110,7 +110,7 @@ services:
       - mongodb
     restart: unless-stopped
     deploy:
-      replicas: 2
+      replicas: 1
 
   editor-service:
     build:

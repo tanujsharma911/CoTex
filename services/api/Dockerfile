@@ -1,10 +1,5 @@
 FROM tex-compiler:latest
 
-RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g pnpm
-
 WORKDIR /app
 
 COPY package*.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json ./
