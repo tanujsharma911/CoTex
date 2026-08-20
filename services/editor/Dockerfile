@@ -29,4 +29,6 @@ RUN pnpm turbo build
 
 EXPOSE 3001
 
+WORKDIR /app/services/editor
+
 CMD ["node", "dist/index.js"]

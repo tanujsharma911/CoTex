@@ -27,4 +27,6 @@ RUN pnpm turbo build
 
 EXPOSE 3000
 
+WORKDIR /app/services/api
+
 CMD ["node", "dist/index.js"]
