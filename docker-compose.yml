@@ -107,7 +107,7 @@ services:
     depends_on:
       - tex-compiler
       - redis
-      - mongodb
+      # - mongodb
     restart: unless-stopped
     deploy:
       replicas: 1
@@ -129,12 +129,12 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET}
     depends_on:
       - redis
-      - mongodb
+      # - mongodb
     restart: unless-stopped
     deploy:
       replicas: 2
 
 volumes:
   redis_data:
-  mongodb_data:
+  # mongodb_data:
   minio_data:
